@@ -1,5 +1,7 @@
 # simple-timeline
 
+![alt text](https://github.com/kaufmajo/web1/public/img/Screenshot_1.png?raw=true)
+
 ## Server
 
 Debian Bookworm
