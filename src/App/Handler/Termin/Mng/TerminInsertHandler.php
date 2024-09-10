@@ -61,7 +61,7 @@ class TerminInsertHandler extends AbstractTerminWriteHandler
         // save
         $terminEntity = $this->save($terminEntity, $terminForm);
 
-        $this->flashMessages($request)->flash('primary', 'default');
+        $this->flashMessages($request)->flash('secondary', 'default');
 
         return new RedirectResponse($this->getUrlpoolService()->get(query_params: ['date' => $terminEntity->getTerminDatumStart()], fragment: $terminEntity->getTerminDatumStart()));
     }

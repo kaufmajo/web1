@@ -18,7 +18,7 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
 
 ?>
 <div class="container-fluid p-0">
-    <div class="fs-1 d-flex align-items-center justify-content-center py-1 px-3 mx-0 sticky-top text-bg-primary">
+    <div class="fs-1 d-flex align-items-center justify-content-center py-1 px-3 mx-0 sticky-top text-bg-secondary">
         <div class="position-absolute top-0 end-0 mt-1 me-3">
             <a class="link-light text-decoration-none" href="<?= $this->urlpool()->get() ?>"><i class="bi bi-x-lg fs-1"></i></a>
         </div>
@@ -48,7 +48,7 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                         'showErrorMessage' => false,
                     ]) ?>
                     <span class="input-group-text m-0 p-0">
-                        <button id="input-search-submit" name="submit-button" type="submit" class="btn btn-primary">
+                        <button id="input-search-submit" name="submit-button" type="submit" class="btn btn-secondary">
                             <i class="bi bi-search"></i>
                         </button>
                     </span>
@@ -106,7 +106,7 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                 ?>
             <?php endwhile; ?>
         <?php elseif (!empty($_GET)) : ?>
-            <div class="alert alert-primary text-center my-3 fw-bold" role="alert">
+            <div class="alert alert-secondary text-center my-3 fw-bold" role="alert">
                 Es wurden keine Termine gefunden.
             </div>
         <?php endif; ?>
