@@ -174,17 +174,31 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                                     <?php endif; ?>
                                 </div>
                                 <?php if ($loggedIn) : ?>
-                                    <div class="dropdown position-absolute">
-                                        <button class="ps-0 btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bi bi-list"></i>
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" href="/manage/termin-update/<?= $termin['termin_id'] ?>">Bearbeiten</a></li>
-                                            <li><a class="dropdown-item" href="/manage/termin-copy/<?= $termin['termin_id'] ?>">Kopieren</a></li>
-                                            <li><a class="dropdown-item" href="/manage/termin-delete/<?= $termin['termin_id'] ?>">Löschen</a></li>
-                                        </ul>
+                                    <!-- Button trigger modal -->
+                                    <button type="button" class="ps-0 btn btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                        <i class="bi bi-list"></i>
+                                    </button>
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Aktion</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="list-group list-group-flush">
+                                                        <a class="list-group-item list-group-item-action" href="/manage/termin-update/<?= $termin['termin_id'] ?>">Bearbeiten</a>
+                                                        <a class="list-group-item list-group-item-action" href="/manage/termin-copy/<?= $termin['termin_id'] ?>">Kopieren</a>
+                                                        <a class="list-group-item list-group-item-action" href="/manage/termin-delete/<?= $termin['termin_id'] ?>">Löschen</a>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schliessen</button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>&nbsp;</div>
                                 <?php endif ?>
                             <?php endif ?>
                         </div>
