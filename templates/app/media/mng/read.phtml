@@ -61,7 +61,7 @@ use App\Service\HelperService;
         $mediaEntity = (new MediaEntity())->exchangeArray($media);
         ?>
         <div class="row <?= $wrapperClass ?> mx-0 py-3" id="<?= HelperService::getAnchorString($media['media_id']) ?>">
-            <div class="col-12 col-lg-1">
+            <div class="col-12 col-lg-1 ps-0">
                 <a class="<?= $anchorClass ?>" title="Media anzeigen" href="/media/<?= $media['media_id'] ?>">
                     <?php if (MediaStorageProvider::isAnImage($mediaEntity) && MediaStorageProvider::isInStorage($mediaEntity)) : ?>
                         <img src="/media/<?= $media['media_id'] ?>?w=75" alt="<?= $media['media_name'] ?>" class="img-fluid m-1">
@@ -78,7 +78,7 @@ use App\Service\HelperService;
                     <?php endif; ?>
                 </a>
             </div>
-            <div class="col-12 col-lg-4">
+            <div class="col-12 col-lg-4 ps-0">
                 <a class="<?= $anchorClass ?>" title="Media anzeigen" href="/media/<?= $media['media_id'] ?>">
                     <?= $this->escape($media['media_anzeige'] ?: $media['media_name']) ?>
                 </a>
@@ -88,10 +88,10 @@ use App\Service\HelperService;
                     <?= $this->escape(HelperService::format_filesize($this->escape($media['media_groesse']))) ?>
                 </span>
             </div>
-            <div class="col-12 col-lg-2">
+            <div class="col-12 col-lg-2 ps-0">
                 <?= $this->escape($media['media_tag']) ?>
             </div>
-            <div class="col-12 col-lg-2">
+            <div class="col-12 col-lg-2 ps-0">
                 <?= $this->escape(HelperService::format_displayDate($media['media_von'], $media['media_bis'])) ?>
                 <!--
                 <br>
@@ -100,12 +100,12 @@ use App\Service\HelperService;
                 <span>
                 -->
             </div>
-            <div class="col-12 col-lg-1">
+            <div class="col-12 col-lg-1 ps-0">
                 <?= $media['media_privat'] ? '<i class="bi bi-lock-fill" title="Media-Element ist privat"></i>' : "" ?>
                 <?= $media['termin_id'] ? '<i class="bi bi-link-45deg" title="Media-Element ist mit einem Termin verlinkt."></i>' : "" ?>
                 <?= $media['_hatVersion'] ? '<a title="Media-Element Versionen anzeigen." href="/manage/media-version/' . $media["media_id"] . '"><i class="bi bi-clock-history"></i></a>' : "" ?>
             </div>
-            <div class="col-12 col-lg-2 text-start text-end">
+            <div class="col-12 col-lg-2 text-start text-end pe-0">
                 <div class="dropdown">
                     <button class="btn btn-info dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Aktion
