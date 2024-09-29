@@ -79,7 +79,7 @@ use App\Service\HelperService;
                 </a>
             </div>
             <div class="col-12 col-lg-4 ps-0">
-                <a class="<?= $anchorClass ?>" title="Media anzeigen" href="/media/<?= $media['media_id'] ?>">
+                <a class="<?= $anchorClass ?> text-break" title="Media anzeigen" href="/media/<?= $media['media_id'] ?>">
                     <?= $this->escape($media['media_anzeige'] ?: $media['media_name']) ?>
                 </a>
                 <br>
