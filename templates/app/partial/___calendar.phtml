@@ -56,7 +56,7 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                         $listClass .= !$terminCollection->isDatumWithinReferenceMonth() ? ' d-none d-xxl-block' : '';
                         ?>
                         <li class="p-2 <?= $listClass ?>" <?= HelperService::getAnchorAttribute($termin['datum_datum']) ?>>
-                            <div class="d-flex justify-content-between w-100 fw-light text-body-secondary">
+                            <div class="d-flex justify-content-between w-100 fw-light text-secondary-emphasis">
                                 <div>
                                     <?php if ($terminCollection->isDatumToday()) : ?>
                                         <span class="badge text-bg-warning fw-bold">Heute</span>
@@ -64,7 +64,9 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                                         <?php if ($terminCollection->isDatumFirstDayOfMonth()) : ?>
                                             <i class="bi bi-caret-right-fill text-warning d-none d-xxl-inline-block"></i>
                                         <?php endif ?>
-                                        <span class="me-1"><?= $this->escape(DTF::format($terminCollection->getDatum(), 'd')) ?></span>
+                                        <span class="me-1">
+                                            <?= $this->escape(DTF::format($terminCollection->getDatum(), 'd')) ?>
+                                        </span>
                                         <?php if ($terminCollection->isDatumFirstDayOfMonth()) : ?>
                                             <span class="d-none d-xxl-inline-block">
                                                 <?= $this->escape(DTF::format($terminCollection->getDatum(), 'MMMM')) ?>
