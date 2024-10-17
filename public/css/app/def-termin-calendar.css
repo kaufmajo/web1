@@ -27,6 +27,7 @@ ol>li {
     ol {
         grid-template-columns: repeat(7, 1fr);
         height: calc(100vh - 68px);
+        /* height: calc(100vh - 83px); */
     }
 
     .body-text {
