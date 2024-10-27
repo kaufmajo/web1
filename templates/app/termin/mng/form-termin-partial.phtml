@@ -1,8 +1,8 @@
 <?php $terminForm->prepare() ?>
 <?php $this->insert('partial::formerror', ['form' => $terminForm, 'showMessages' => false]); ?>
 <form action="<?= $terminForm->getAttribute('action') ?>" method="<?= $terminForm->getAttribute('method') ?>"
-      name="<?= $terminForm->getName() ?>" id="<?= $terminForm->getName() ?>"
-      enctype="<?= $terminForm->getAttribute('enctype') ?>">
+    name="<?= $terminForm->getName() ?>" id="<?= $terminForm->getName() ?>"
+    enctype="<?= $terminForm->getAttribute('enctype') ?>">
     <!-- hidden -->
     <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_id')]) ?>
     <!-- end hidden -->
@@ -29,7 +29,7 @@
     <ul class="nav nav-tabs" id="termin-tab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="termin-tab" data-bs-toggle="tab" data-bs-target="#termin" type="button"
-                    role="tab">Termin
+                role="tab">Termin
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -39,17 +39,17 @@
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="option-tab" data-bs-toggle="tab" data-bs-target="#option" type="button"
-                    role="tab">Optionen
+                role="tab">Optionen
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="serie-tab" data-bs-toggle="tab" data-bs-target="#serie" type="button"
-                    role="tab">Serie
+                role="tab">Serie
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="notiz-tab" data-bs-toggle="tab" data-bs-target="#notiz" type="button"
-                    role="tab">Notiz
+                role="tab">Notiz
             </button>
         </li>
     </ul>
@@ -72,7 +72,7 @@
             <div class="row my-1 g-2">
                 <div class="col-md-12">
                     <div class="form-floating">
-                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_kategorie'), 'attributes' => ['class' => 'form-control'], 'datalist' => ['list' => $datalist['kategorie'], 'id' => 'kategorie-datalist']]) ?>
+                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_kategorie'), 'attributes' => ['class' => 'form-control', 'autocomplete' => 'off'], 'datalist' => ['list' => $datalist['kategorie'], 'id' => 'kategorie-datalist']]) ?>
                         <?php $this->insert('helper::label', ['element' => $terminForm->get('termin_kategorie'), 'attributes' => ['class' => 'form-label']]) ?>
                     </div>
                 </div>
@@ -80,7 +80,7 @@
             <div class="row my-1 g-2">
                 <div class="col-md-12">
                     <div class="form-floating">
-                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_betreff'), 'attributes' => ['class' => 'form-control'], 'datalist' => ['list' => $datalist['betreff'], 'id' => 'betreff-datalist']]) ?>
+                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_betreff'), 'attributes' => ['class' => 'form-control', 'autocomplete' => 'off'], 'datalist' => ['list' => $datalist['betreff'], 'id' => 'betreff-datalist']]) ?>
                         <?php $this->insert('helper::label', ['element' => $terminForm->get('termin_betreff'), 'attributes' => ['class' => 'form-label']]) ?>
                     </div>
                 </div>
@@ -148,7 +148,7 @@
             <div class="row my-1 g-2">
                 <div class="col-md-12">
                     <div class="form-floating">
-                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_mitvon'), 'attributes' => ['class' => 'form-control'], 'datalist' => ['list' => $datalist['mitvon'], 'id' => 'mitvon-datalist']]) ?>
+                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_mitvon'), 'attributes' => ['class' => 'form-control', 'autocomplete' => 'off'], 'datalist' => ['list' => $datalist['mitvon'], 'id' => 'mitvon-datalist']]) ?>
                         <?php $this->insert('helper::label', ['element' => $terminForm->get('termin_mitvon'), 'attributes' => ['class' => 'form-label']]) ?>
                     </div>
                 </div>
@@ -156,13 +156,13 @@
             <div class="row my-1 g-2">
                 <div class="col-md-6">
                     <div class="form-floating">
-                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_link'), 'attributes' => ['class' => 'form-control'], 'datalist' => ['list' => $datalist['link'], 'id' => 'link-datalist']]) ?>
+                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_link'), 'attributes' => ['class' => 'form-control', 'autocomplete' => 'off'], 'datalist' => ['list' => $datalist['link'], 'id' => 'link-datalist']]) ?>
                         <?php $this->insert('helper::label', ['element' => $terminForm->get('termin_link'), 'attributes' => ['class' => 'form-label']]) ?>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="form-floating">
-                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_link_titel'), 'attributes' => ['class' => 'form-control'], 'datalist' => ['list' => $datalist['link_titel'], 'id' => 'link-titel-datalist']]) ?>
+                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_link_titel'), 'attributes' => ['class' => 'form-control', 'autocomplete' => 'off'], 'datalist' => ['list' => $datalist['link_titel'], 'id' => 'link-titel-datalist']]) ?>
                         <?php $this->insert('helper::label', ['element' => $terminForm->get('termin_link_titel'), 'attributes' => ['class' => 'form-label']]) ?>
                     </div>
                 </div>
@@ -173,13 +173,13 @@
             <div class="row my-1 g-2">
                 <div class="col-md-6">
                     <div class="form-floating">
-                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_link2'), 'attributes' => ['class' => 'form-control'], 'datalist' => ['list' => $datalist['link'], 'id' => 'link-datalist']]) ?>
+                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_link2'), 'attributes' => ['class' => 'form-control', 'autocomplete' => 'off'], 'datalist' => ['list' => $datalist['link'], 'id' => 'link-datalist']]) ?>
                         <?php $this->insert('helper::label', ['element' => $terminForm->get('termin_link2'), 'attributes' => ['class' => 'form-label']]) ?>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="form-floating">
-                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_link2_titel'), 'attributes' => ['class' => 'form-control'], 'datalist' => ['list' => $datalist['link_titel'], 'id' => 'link-titel-datalist']]) ?>
+                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_link2_titel'), 'attributes' => ['class' => 'form-control', 'autocomplete' => 'off'], 'datalist' => ['list' => $datalist['link_titel'], 'id' => 'link-titel-datalist']]) ?>
                         <?php $this->insert('helper::label', ['element' => $terminForm->get('termin_link2_titel'), 'attributes' => ['class' => 'form-label']]) ?>
                     </div>
                 </div>
@@ -195,7 +195,7 @@
                 </div>
                 <div class="col-md-7">
                     <div class="form-floating">
-                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_image'), 'attributes' => ['class' => 'form-control'], 'datalist' => ['list' => $datalist['image'], 'id' => 'image-datalist']]) ?>
+                        <?php $this->insert('helper::input', ['element' => $terminForm->get('termin_image'), 'attributes' => ['class' => 'form-control', 'autocomplete' => 'off'], 'datalist' => ['list' => $datalist['image'], 'id' => 'image-datalist']]) ?>
                         <?php $this->insert('helper::label', ['element' => $terminForm->get('termin_image'), 'attributes' => ['class' => 'form-label']]) ?>
                     </div>
                 </div>
