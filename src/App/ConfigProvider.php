@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Listener\LoggingErrorListenerDelegatorFactory;
+use Laminas\Stratigility\Middleware\ErrorHandler;
 use Mezzio\Authentication\AuthenticationInterface;
 use Mezzio\Authentication\Session\PhpSession;
 use Mezzio\Authentication\UserRepository\PdoDatabase;
@@ -68,6 +70,11 @@ class ConfigProvider
                 Plates\Extension\MediaExtension::class => Plates\Extension\MediaExtensionFactory::class,
                 Plates\Extension\QuoteExtension::class => Plates\Extension\QuoteExtensionFactory::class,
                 Plates\Extension\UrlpoolExtension::class => Plates\Extension\UrlpoolExtensionFactory::class,
+            ],
+            'delegators' => [
+                ErrorHandler::class => [
+                    LoggingErrorListenerDelegatorFactory::class,
+                ],
             ],
         ];
     }
