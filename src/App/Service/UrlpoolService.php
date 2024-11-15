@@ -55,15 +55,17 @@ class UrlpoolService
         $urls = $this->session->get('urls');
 
         if (empty($urls) || ($this->routeName && !array_key_exists($this->routeName, $urls))) {
-            
+
             $this->uri = new Uri();
+
+            $this->routeName = 'default.root';
         } elseif (empty($this->routeName)) {
-            
+
             $this->uri = unserialize(end($urls));
-            
+
             $this->routeName = array_key_last($urls);
         } else {
-            
+
             $this->uri = unserialize($urls[$this->routeName]);
         }
 
