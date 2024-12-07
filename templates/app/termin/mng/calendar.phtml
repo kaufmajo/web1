@@ -12,7 +12,7 @@
         <a class="navbar-brand fw-bold" href="/">Ansicht</a>
         <a class="navbar-brand fw-bold" href="/manage/media-read">Media</a>
         <a class="navbar-brand fw-bold" href="/cleanup">Cleanup</a>
-        <a class="navbar-brand fw-bold" href="/app-logout">Abmelden</a>
+        <a class="navbar-brand fw-bold" href="/app-logout" onclick="return confirm('Möchten Sie sich abmelden?')">Abmelden</a>
     </div>
 </nav>
 <?php $this->insert('app-partial::___calendar', [
