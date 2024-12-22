@@ -132,11 +132,11 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                                         <?php endif ?>
                                     <?php endif ?>
                                     <?php if ($termin['termin_text']) : ?>
-                                        <?php if ($termin['termin_text']) : ?>
+                                        <a href="/show/<?= $this->escape($termin['termin_id']) ?>?back=<?= $prevnextUrl ?>" class="<?= $linkColor ?> text-decoration-none" <?= HelperService::getAnchorAttribute($terminCollection->fromMemory('calenderlist-anchor-id', $termin['termin_id'])) ?>>
                                             <div class="opacity-50">
                                                 <?= nl2br($this->escape(HelperService::string_substrWords($termin['termin_text'], 30))) ?>
                                             </div>
-                                        <?php endif; ?>
+                                        </a>
                                     <?php endif ?>
                                     <?php if ((new DateTime($termin['datum_datum']))->format('Y-m-d') !== (new DateTime())->format('Y-m-d')) : ?>
                                         <?php if ($termin['_is_new']) : ?>
