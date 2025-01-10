@@ -13,6 +13,13 @@ $ dpkg -s rsync # check if packet is already installed
 $ apt-get install rsync
 ```
 
+### Install lsb-release
+
+```shell 
+$ dpkg -s lsb-release # check if packet is already installed
+$ apt-get install lsb-release
+```
+
 ## Webserver
 
 ### Install Apache Webserver
@@ -246,7 +253,7 @@ $ mariadb -V
 #### Clone Repository in current directory
 
 ```shell
-$ git clone https://github.com/kaufmajo/simple-timeline.git .
+$ git clone https://github.com/kaufmajo/web1.git .
 ```
 
 ### File-Persmission on Dev-Server
