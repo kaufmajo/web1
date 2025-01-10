@@ -190,7 +190,7 @@ Change default php version on OS:
 sudo update-alternatives --config php
 ```
 
-Change default php version on Apache:
+Activate and change default php version on Apache:
 
 ```shell
 sudo a2dismod php8.2 
@@ -246,6 +246,14 @@ How to check mariadb version:
 $ mariadb -V
 ```
 
+### Mariadb OS log entries
+
+How to check mariadb OS log entries:
+
+```shell
+$ journalctl -u mariadb -f
+```
+
 ## Application
 
 ### Repository
@@ -254,6 +262,15 @@ $ mariadb -V
 
 ```shell
 $ git clone https://github.com/kaufmajo/web1.git .
+```
+
+#### Duplicate config files
+
+Duplicate (don't rename) the *.dist files and adapt the config settings
+
+```shell
+$ cd /var/www/web1/config
+$ cd /var/www/web1/config/autoload
 ```
 
 ### File-Persmission on Dev-Server
