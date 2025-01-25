@@ -69,13 +69,13 @@ inputKategorie.addEventListener("change", function () {
 
 inputDatumStart.addEventListener("focus", function () {
     // Store the current value on focus and on change
-    datumStartPreviousValue = inputDatumStart.value;
-    datumEndePreviousValue = inputDatumEnde.value;
+    datumStartPreviousValue = datumStartPreviousValue || inputDatumStart.value;
+    datumEndePreviousValue = datumEndePreviousValue || inputDatumEnde.value;
 });
 
 inputDatumStart.addEventListener("change", function () {
-    // Do something with the previous value after the change
-    if (Date.parse(inputDatumEnde.value)) {
+    // do something with the previous value after the change
+    if (Date.parse(inputDatumStart.value) && Date.parse(inputDatumEnde.value)) {
         let datumStart = new Date(inputDatumStart.value);
         let datumEnde = new Date(inputDatumStart.value);
         datumEnde.setDate(datumStart.getDate() + date_getDifferenceIndays(datumStartPreviousValue, datumEndePreviousValue));
