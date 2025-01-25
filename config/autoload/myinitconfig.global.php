@@ -11,7 +11,7 @@ return [
         'considered_as_updated'         => 3,    // in days
         'cache'                          => [
             'browser' => [
-                'image_lifetime' => 60 * 60 * 24, // in seconds
+                'image_lifetime' => 60 * 60 * 24 * 3, // in seconds
             ],
         ],
     ],
