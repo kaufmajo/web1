@@ -40,7 +40,7 @@ class MediaInputFilter extends InputFilter
                     [
                         'name'    => Validator\File\Extension::class,
                         'options' => [
-                            'extension' => 'doc,docx,jpg,jpeg,odt,pdf,png,ppt,pptx,txt,xls,xlsx,zip',
+                            'extension' => 'doc,docx,jpg,jpeg,odt,ods,pdf,png,ppt,pptx,txt,xls,xlsx,zip',
                         ],
                     ],
                     [

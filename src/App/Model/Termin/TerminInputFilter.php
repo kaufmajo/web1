@@ -343,7 +343,7 @@ class TerminInputFilter extends InputFilter
                     [
                         'name'    => Validator\File\Extension::class,
                         'options' => [
-                            'extension' => 'doc,docx,jpg,jpeg,pdf,png,ppt,pptx,txt,xls,xlsx,zip',
+                            'extension' => 'doc,docx,jpg,jpeg,odt,ods,odp,pdf,png,ppt,pptx,txt,xls,xlsx,zip',
                         ],
                     ],
                     [
@@ -379,7 +379,7 @@ class TerminInputFilter extends InputFilter
                     [
                         'name'    => Validator\File\Extension::class,
                         'options' => [
-                            'extension' => 'doc,docx,jpg,jpeg,pdf,png,ppt,pptx,txt,xls,xlsx,zip',
+                            'extension' => 'doc,docx,jpg,jpeg,odt,ods,odp,pdf,png,ppt,pptx,txt,xls,xlsx,zip',
                         ],
                     ],
                     [
