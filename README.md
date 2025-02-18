@@ -153,6 +153,7 @@ $ apt-get install php8.3-intl
 $ apt-get install php8.3-tidy
 $ apt-get install php8.3-xml
 $ apt-get install php8.3-zip
+$ apt-get install php8.3-sqlite
 $ apt-get install php8.3-xdebug # only required on dev server
 ```
 
