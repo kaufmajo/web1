@@ -62,11 +62,11 @@ class TemplateDefaultsMiddleware implements MiddlewareInterface
         );
 
         // Inject Color
-        $session->set('theme', $session->get('theme') ?? rand(0, 7));
+        $session->set('color', (int)$request->getQueryParams()['color'] ?? $session->get('color') ?? rand(0, 7));
         $this->templateRenderer->addDefaultParam(
             TemplateRendererInterface::TEMPLATE_ALL,
-            'theme',
-            $session->get('theme')
+            'color',
+            $session->get('color')
         );
 
         // Inject any other data you always need in all your templates...
