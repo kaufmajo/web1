@@ -9,6 +9,7 @@ use Mezzio\Authentication\UserInterface;
 use Mezzio\Flash\FlashMessageMiddleware;
 use Mezzio\Flash\FlashMessagesInterface;
 use Mezzio\Router\RouteResult;
+use Mezzio\Session\RetrieveSession;
 use Mezzio\Template\TemplateRendererInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -26,6 +27,8 @@ class TemplateDefaultsMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        $session = RetrieveSession::fromRequest($request);
+
         // Inject the current user, or null if there isn't one.
         $this->templateRenderer->addDefaultParam(
             TemplateRendererInterface::TEMPLATE_ALL,
@@ -56,6 +59,14 @@ class TemplateDefaultsMiddleware implements MiddlewareInterface
             TemplateRendererInterface::TEMPLATE_ALL,
             'urlpool',
             $routeResult ? $urlpoolService : null
+        );
+
+        // Inject Color
+        $session->set('theme', $session->get('theme') ?? rand(0, 7));
+        $this->templateRenderer->addDefaultParam(
+            TemplateRendererInterface::TEMPLATE_ALL,
+            'theme',
+            $session->get('theme')
         );
 
         // Inject any other data you always need in all your templates...

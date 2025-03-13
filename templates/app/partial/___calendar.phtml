@@ -20,32 +20,32 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
 ?>
 <!-- container -->
 <div class="container-fluid p-0">
-    <div class="fs-1 d-flex align-items-center justify-content-between py-1 px-3 mx-0 sticky-top text-bg-secondary">
-        <a class="link-light text-decoration-none" href="<?= $prevnextUrl ?>?date=<?= (new DateTime($dateParam))->modify('first day of last month')->format('Y-m-d') ?>">
+    <div class="fs-1 d-flex align-items-center justify-content-between py-1 px-3 mx-0 sticky-top <?= $this->color()['text-bg-main'] ?>">
+        <a class="<?= $this->color()['link-main'] ?> text-decoration-none" href="<?= $prevnextUrl ?>?date=<?= (new DateTime($dateParam))->modify('first day of last month')->format('Y-m-d') ?>">
             <i class="bi bi-caret-left-fill"></i>
         </a>
-        <span class="fw-bold">
+        <span class="fw-light">
             <?php if ($terminCollection->isReferenzThisYear()) : ?>
                 <?= $this->escape(DTF::format($terminCollection->getReferenzDatum(), "LLLL")) ?>
             <?php else : ?>
                 <?= $this->escape(DTF::format($terminCollection->getReferenzDatum(), "LLLL yy")) ?>
             <?php endif ?>
-            <a class="link-light" href="<?= $searchUrl ?>"><i class="bi bi-search ms-3"></i></a>
+            <a class="<?= $this->color()['link-main'] ?>" href="<?= $searchUrl ?>"><i class="bi bi-search ms-3"></i></a>
         </span>
-        <a class="link-light text-decoration-none" href="<?= $prevnextUrl ?>?date=<?= (new DateTime($dateParam))->modify('first day of next month')->format('Y-m-d') ?>">
+        <a class="<?= $this->color()['link-main'] ?> text-decoration-none" href="<?= $prevnextUrl ?>?date=<?= (new DateTime($dateParam))->modify('first day of next month')->format('Y-m-d') ?>">
             <i class="bi bi-caret-right-fill"></i>
         </a>
     </div>
     <div class="row m-0">
         <div class="offset-lg-2 col-lg-8 offset-xxl-0 col-xxl px-0">
             <ol class="p-0 mb-0 bg-dark-subtle">
-                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-light-subtle text-body-emphasis">Mo</li>
-                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-light-subtle text-body-emphasis">Di</li>
-                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-light-subtle text-body-emphasis">Mi</li>
-                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-light-subtle text-body-emphasis">Do</li>
-                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-light-subtle text-body-emphasis">Fr</li>
-                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-light-subtle text-body-emphasis">Sa</li>
-                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-body-tertiary text-body-emphasis">So</li>
+                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-light-subtle text-secondary-emphasis">Mo</li>
+                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-light-subtle text-secondary-emphasis">Di</li>
+                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-light-subtle text-secondary-emphasis">Mi</li>
+                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-light-subtle text-secondary-emphasis">Do</li>
+                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-light-subtle text-secondary-emphasis">Fr</li>
+                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-light-subtle text-secondary-emphasis">Sa</li>
+                <li class="d-none d-xxl-inline fw-bold p-2 fs-3 bg-body-tertiary text-secondary-emphasis">So</li>
                 <?php foreach ($terminCollection as $termin) : ?>
                     <?php
                     $wrapperTag = TerminStatusEnum::GESTRICHEN->value === $termin['termin_status'] ? ['del'] : [];
@@ -59,10 +59,10 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                             <div class="d-flex justify-content-between w-100 fw-light text-secondary-emphasis">
                                 <div>
                                     <?php if ($terminCollection->isDatumToday()) : ?>
-                                        <span class="badge text-bg-warning fw-bold">Heute</span>
+                                        <span class="badge <?= $this->color()['text-bg-indicator'] ?> fw-bold">Heute</span>
                                     <?php else : ?>
                                         <?php if ($terminCollection->isDatumFirstDayOfMonth()) : ?>
-                                            <i class="bi bi-caret-right-fill text-warning d-none d-xxl-inline-block"></i>
+                                            <i class="bi bi-caret-right-fill <?= $this->color()['text-indicator'] ?> d-none d-xxl-inline-block"></i>
                                         <?php endif ?>
                                         <span class="me-1">
                                             <?= $this->escape(DTF::format($terminCollection->getDatum(), 'd')) ?>
@@ -102,7 +102,7 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                                 <div <?= $highlightAttribute ?>>
                                     <?php $this->insert('partial::wrappertags', ['type' => 'open', 'tags' => $wrapperTag]) ?>
                                     <?php if (TerminStatusEnum::MITTEILUNG->value === $termin['termin_status']) : ?>
-                                        <i class="bi bi-info-circle-fill me-1 text-warning"></i>
+                                        <i class="bi bi-info-circle-fill me-1 <?= $this->color()['text-indicator'] ?>"></i>
                                     <?php endif ?>
                                     <a href="/show/<?= $this->escape($termin['termin_id']) ?>?back=<?= $prevnextUrl ?>" class="<?= $linkColor ?> text-decoration-none" <?= HelperService::getAnchorAttribute($terminCollection->fromMemory('calenderlist-anchor-id', $termin['termin_id'])) ?>>
                                         <span class="me-2">
@@ -141,10 +141,10 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                                     <?php if ((new DateTime($termin['datum_datum']))->format('Y-m-d') !== (new DateTime())->format('Y-m-d')) : ?>
                                         <?php if ($termin['_is_new']) : ?>
                                             <!-- new indicator -->
-                                            <span class="badge bg-warning-subtle text-warning-emphasis fw-bold mt-1 d-table">Neu</span>
+                                            <span class="badge <?= $this->color()['bg-indicator-subtle'] ?> <?= $this->color()['text-indicator-emphasis'] ?> fw-bold mt-1 d-table">Neu</span>
                                         <?php elseif ($termin['_is_updated']) : ?>
                                             <!-- update indicator -->
-                                            <span class="badge bg-warning-subtle text-warning-emphasis fw-bold mt-1 d-table">Aktualisiert</span>
+                                            <span class="badge <?= $this->color()['bg-indicator-subtle'] ?> <?= $this->color()['text-indicator-emphasis'] ?> fw-bold mt-1 d-table">Aktualisiert</span>
                                         <?php endif; ?>
                                     <?php endif; ?>
                                     <?php $this->insert('partial::wrappertags', ['type' => 'close', 'tags' => $wrapperTag]) ?>
@@ -161,22 +161,22 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                                                 </div>
                                             <?php endif ?>
                                             <?php if ($termin['termin_notiz']) : ?>
-                                                <span class="badge bg-warning-subtle text-warning-emphasis fw-bold mt-1">Notiz</span>
+                                                <span class="badge <?= $this->color()['bg-indicator-subtle'] ?> <?= $this->color()['text-indicator-emphasis'] ?> fw-bold mt-1">Notiz</span>
                                             <?php endif; ?>
                                             <?php if ($termin['termin_zeige_einmalig']) : ?>
-                                                <span class="badge bg-warning-subtle text-warning-emphasis fw-bold mt-1">Einmalig</span>
+                                                <span class="badge <?= $this->color()['bg-indicator-subtle'] ?> <?= $this->color()['text-indicator-emphasis'] ?> fw-bold mt-1">Einmalig</span>
                                             <?php endif; ?>
                                             <?php if ($termin['termin_zeige_tagezuvor']) : ?>
-                                                <span class="badge bg-warning-subtle text-warning-emphasis fw-bold mt-1">Tage zuvor <?= $termin['termin_zeige_tagezuvor'] ?></span>
+                                                <span class="badge <?= $this->color()['bg-indicator-subtle'] ?> <?= $this->color()['text-indicator-emphasis'] ?> fw-bold mt-1">Tage zuvor <?= $termin['termin_zeige_tagezuvor'] ?></span>
                                             <?php endif; ?>
                                             <?php if (!$termin['termin_aktiviere_drucken']) : ?>
-                                                <span class="badge bg-warning-subtle text-warning-emphasis fw-bold mt-1 text-decoration-line-through">Druckrelevant</span>
+                                                <span class="badge <?= $this->color()['bg-indicator-subtle'] ?> <?= $this->color()['text-indicator-emphasis'] ?> fw-bold mt-1 text-decoration-line-through">Druckrelevant</span>
                                             <?php endif; ?>
                                             <?php if (!$termin['termin_ist_konfliktrelevant']) : ?>
-                                                <!-- <span class="badge bg-warning-subtle text-warning-emphasis fw-bold mt-1 text-decoration-line-through">Konfliktrelevant</span> -->
+                                                <!-- <span class="badge <?= $this->color()['bg-indicator-subtle'] ?> <?= $this->color()['text-indicator-emphasis'] ?> fw-bold mt-1 text-decoration-line-through">Konfliktrelevant</span> -->
                                             <?php endif; ?>
                                             <?php if (!$termin['termin_zeige_konflikt']) : ?>
-                                                <!-- <span class="badge bg-warning-subtle text-warning-emphasis fw-bold mt-1 text-decoration-line-through">Konfliktanzeige</span> -->
+                                                <!-- <span class="badge <?= $this->color()['bg-indicator-subtle'] ?> <?= $this->color()['text-indicator-emphasis'] ?> fw-bold mt-1 text-decoration-line-through">Konfliktanzeige</span> -->
                                             <?php endif; ?>
                                         </div>
                                         <?php if ($loggedIn) : ?>

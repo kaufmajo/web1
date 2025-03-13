@@ -67,6 +67,7 @@ class ConfigProvider
                 Service\HistoryService::class => Service\HistoryServiceFactory::class,
                 Service\UrlpoolService::class => Service\UrlpoolServiceFactory::class,
                 // Extension
+                Plates\Extension\ColorExtension::class => Plates\Extension\ColorExtensionFactory::class,
                 Plates\Extension\MediaExtension::class => Plates\Extension\MediaExtensionFactory::class,
                 Plates\Extension\QuoteExtension::class => Plates\Extension\QuoteExtensionFactory::class,
                 Plates\Extension\UrlpoolExtension::class => Plates\Extension\UrlpoolExtensionFactory::class,

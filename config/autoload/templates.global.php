@@ -6,6 +6,7 @@ return [
     'plates'    => [
         'extensions' => [
             // string service names or class names of Plates extensions
+            App\Plates\Extension\ColorExtension::class,
             App\Plates\Extension\MediaExtension::class,
             App\Plates\Extension\QuoteExtension::class,
             App\Plates\Extension\UrlpoolExtension::class,
