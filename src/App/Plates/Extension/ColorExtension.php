@@ -16,6 +16,7 @@ class ColorExtension implements ExtensionInterface
 
     private array $colors = [
         [
+            'btn-main' => 'btn-primary',
             'text-bg-main' => 'text-bg-primary',
             'text-indicator' => 'text-primary',
             'text-indicator-emphasis' => 'text-primary-emphasis',
@@ -24,6 +25,7 @@ class ColorExtension implements ExtensionInterface
             'link-main' => 'link-light',
         ],
         [
+            'btn-main' => 'btn-secondary',
             'text-bg-main' => 'text-bg-secondary',
             'text-indicator' => 'text-secondary',
             'text-indicator-emphasis' => 'text-secondary-emphasis',
@@ -32,6 +34,7 @@ class ColorExtension implements ExtensionInterface
             'link-main' => 'link-light',
         ],
         [
+            'btn-main' => 'btn-success',
             'text-bg-main' => 'text-bg-success',
             'text-indicator' => 'text-success',
             'text-indicator-emphasis' => 'text-success-emphasis',
@@ -40,6 +43,7 @@ class ColorExtension implements ExtensionInterface
             'link-main' => 'link-light',
         ],
         [
+            'btn-main' => 'btn-danger',
             'text-bg-main' => 'text-bg-danger',
             'text-indicator' => 'text-danger',
             'text-indicator-emphasis' => 'text-danger-emphasis',
@@ -48,6 +52,7 @@ class ColorExtension implements ExtensionInterface
             'link-main' => 'link-light',
         ],
         [
+            'btn-main' => 'btn-warning',
             'text-bg-main' => 'text-bg-warning',
             'text-indicator' => 'text-warning',
             'text-indicator-emphasis' => 'text-warning-emphasis',
@@ -56,6 +61,7 @@ class ColorExtension implements ExtensionInterface
             'link-main' => 'link-dark',
         ],
         [
+            'btn-main' => 'btn-info',
             'text-bg-main' => 'text-bg-info',
             'text-indicator' => 'text-info',
             'text-indicator-emphasis' => 'text-info-emphasis',
@@ -64,6 +70,7 @@ class ColorExtension implements ExtensionInterface
             'link-main' => 'link-dark',
         ],
         [
+            'btn-main' => 'btn-light',
             'text-bg-main' => 'text-bg-light',
             'text-indicator' => 'text-light-emphasis',
             'text-indicator-emphasis' => 'text-light-emphasis',
@@ -72,6 +79,7 @@ class ColorExtension implements ExtensionInterface
             'link-main' => 'link-dark',
         ],
         [
+            'btn-main' => 'btn-dark',
             'text-bg-main' => 'text-bg-dark',
             'text-indicator' => 'text-dark-emphasis',
             'text-indicator-emphasis' => 'text-dark-emphasis',
