@@ -33,7 +33,7 @@ $terminEntity = $terminEntity;
             <?php $this->insert('partial::wrappertags', ['type' => 'open', 'tags' => $wrapperTag]); ?>
             <h1 class="mt-4 fw-light">
                 <?php if (TerminStatusEnum::MITTEILUNG->value === $terminEntity->getTerminStatus()) : ?>
-                    <i class="bi bi-info-circle-fill me-2 text-warning"></i>
+                    <i class="bi bi-info-circle-fill me-2 <?= $this->color()['text-indicator'] ?>"></i>
                 <?php endif ?>
                 <a class="text-secondary-emphasis text-decoration-none" href="<?= $this->escape($back) ?>?id=<?= $this->escape($terminEntity->getTerminId()) ?>&date=<?= $this->escape($terminEntity->getTerminDatumstart()) ?>#<?= $this->escape(HelperService::getAnchorString($terminEntity->getTerminDatumstart())) ?>">
                     <?= $this->escape($terminEntity->getTerminBetreff()) ?>
