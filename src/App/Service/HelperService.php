@@ -9,6 +9,7 @@ use DatePeriod;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use JK\DTF\DTF;
 
 use function explode;
 use function gmdate;
@@ -25,6 +26,9 @@ class HelperService
     const CONST_UNIT_GB   = 'GB';
     const CONST_UNIT_TB   = 'TB';
     const CONST_UNIT_BYTE = 'Byte';
+
+    const CONST_FORMAT_DATE_TYPE_DTF = 'dtf';
+    const CONST_FORMAT_DATE_TYPE_DATETIME = 'datetime';
 
     // -----------------------------------------------
     //
@@ -51,7 +55,9 @@ class HelperService
         return round($bytes, 2) . ' ' . $unit_suffix;
     }
 
-    public static function format_displayDate(string $datumStart, ?string $datumEnde = null, ?array $options = []): string
+    public static function format_displayDate(string|DateTimeInterface $datumStart, null|string|DateTimeInterface $datumEnde = null, ?array $options = [
+        'type' => self::CONST_FORMAT_DATE_TYPE_DATETIME,
+    ]): string
     {
         //Zend_Date::ISO_8601
 
@@ -60,15 +66,38 @@ class HelperService
         }
 
         // init options
-        $format_forOne   = $options['format_forOne'] ?? 'j.n.Y';
-        $format_forLeft  = $options['format_forLeft'] ?? 'j.n';
-        $format_forRight = $options['format_forRight'] ?? 'j.n.Y';
+        $type   = $options['type'] ?? self::CONST_FORMAT_DATE_TYPE_DTF;
+
+        if (self::CONST_FORMAT_DATE_TYPE_DATETIME === $type) {
+            $single = $options['single'] ?? 'j.n.Y';
+            $left  = $options['left'] ?? 'j[.n.Y]';
+            $right = $options['right'] ?? 'j.n.Y';
+        } else {
+            $single = $options['single'] ?? 'd MMMM yy';
+            $left  = $options['left'] ?? 'd [MMMM yy]';
+            $right = $options['right'] ?? 'd MMMM yy';
+        }
 
         // process
         if (null !== $datumEnde && $datumEnde != $datumStart) {
-            return (new DateTime($datumStart))->format($format_forLeft) . ' - ' . (new DateTime($datumEnde))->format($format_forRight);
+
+            $datumStart = is_string($datumStart) ? new DateTime($datumStart) : $datumStart;
+            $datumEnde = is_string($datumEnde) ? new DateTime($datumEnde) : $datumEnde;
+
+            if ($datumStart->format('Y') === $datumEnde->format('Y') && $datumStart->format('n') === $datumEnde->format('n')) {
+                $left =  substr_replace($left, '', strpos($left, '['), strpos($left, ']') - strpos($left, '[') + 1);
+            }
+
+            return $type === self::CONST_FORMAT_DATE_TYPE_DTF
+                ? DTF::format($datumStart, $left) . ' - ' . DTF::format($datumEnde, $right)
+                : $datumStart->format($left) . ' - ' . $datumEnde->format($right);
         } else {
-            return (new DateTime($datumStart))->format($format_forOne);
+
+            $datumStart = is_string($datumStart) ? new DateTime($datumStart) : $datumStart;
+
+            return $type === self::CONST_FORMAT_DATE_TYPE_DTF
+                ? DTF::format($datumStart, $single)
+                : $datumStart->format($single);
         }
     }
 

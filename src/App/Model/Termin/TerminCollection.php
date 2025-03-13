@@ -82,15 +82,6 @@ class TerminCollection extends AbstractCollection
         return $this->getDatum()->format('Y-m-d') === (new DateTime())->add(new DateInterval('P1D'))->format('Y-m-d');
     }
 
-    public function isReferenzThisYear(): bool
-    {
-        if ($this->referenzDatum instanceof DateTimeInterface) {
-            return $this->referenzDatum->format('Y') === (new DateTime())->format('Y');
-        } else {
-            throw new Exception("No reference date given.");
-        }
-    }
-
     public function isDatumThisWeek(): bool
     {
         $today = (new DateTime('now'))->setTime(0, 0);
@@ -107,10 +98,24 @@ class TerminCollection extends AbstractCollection
         return $this->getDatum() >= $firstDay && $this->getDatum() <= $lastDay;
     }
 
+    public function isDatumThisYear(): bool
+    {
+        return $this->getDatum()->format('Y') === (new DateTime())->format('Y');
+    }
+
     public function isDatumWithinReferenceMonth(): bool
     {
         if ($this->referenzDatum instanceof DateTimeInterface) {
             return $this->referenzDatum->format('m') === $this->getDatum()->format('m');
+        } else {
+            throw new Exception("No reference date given.");
+        }
+    }
+
+    public function isReferenzThisYear(): bool
+    {
+        if ($this->referenzDatum instanceof DateTimeInterface) {
+            return $this->referenzDatum->format('Y') === (new DateTime())->format('Y');
         } else {
             throw new Exception("No reference date given.");
         }

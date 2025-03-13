@@ -66,11 +66,15 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                         <div class="col-12 fs-5 fw-light">
                             <div class="fs-6 d-flex justify-content-between w-100">
                                 <div>
-                                    <?= HelperService::format_displayDate($termin['termin_datum_start'], $termin['termin_datum_ende']) ?>
+                                    <?= HelperService::format_displayDate($termin['termin_datum_start'], $termin['termin_datum_ende'], [
+                                        'single' => $terminCollection->isDatumThisYear() ? 'd MMMM' : 'd MMMM yy',
+                                        'left' => $terminCollection->isDatumThisYear() ? 'd [MMMM]' : 'd [MMMM yy]',
+                                        'right' => $terminCollection->isDatumThisYear() ? 'd MMMM' : 'd MMMM yy'
+                                    ]) ?>
                                 </div>
                                 <?php if ($termin['termin_datum_start'] === $termin['termin_datum_ende']) : ?>
                                     <div>
-                                        <?= $this->escape(DTF::format(new DateTime($termin['termin_datum_start']), 'eeee')) ?>
+                                        <?= $this->escape(HelperService::format_displayDate($termin['termin_datum_start'], null, ['single' => 'eeee'])) ?>
                                     </div>
                                 <?php endif ?>
                             </div>

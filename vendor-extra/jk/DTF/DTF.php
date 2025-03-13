@@ -60,14 +60,12 @@ class DTF
         $dtf = self::getInstance();
 
         if ($pattern) {
-
             $dtf->formatter->setPattern($pattern);
         }
 
         $return = $dtf->formatter->format($datetime);
 
         if ($pattern) {
-
             $dtf->formatter->setPattern($dtf->pattern);
         }
 

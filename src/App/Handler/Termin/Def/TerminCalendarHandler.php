@@ -32,7 +32,7 @@ class TerminCalendarHandler extends AbstractTerminHandler
         $terminRepository = $this->getTerminRepository();
 
         // collection
-        $terminCollection      = new TerminCollection($dateParam);
+        $terminCollection = new TerminCollection(referenzDatum: $dateParam);
 
         // view
         $viewData = [
