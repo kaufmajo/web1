@@ -62,7 +62,8 @@ class TemplateDefaultsMiddleware implements MiddlewareInterface
         );
 
         // Inject Color
-        $session->set('color', (int)$request->getQueryParams()['color'] ?? $session->get('color') ?? rand(0, 7));
+        $color = (int)($request->getQueryParams()['color'] ?? $session->get('color') ?? rand(0, 7));
+        $session->set('color', $color >= 0 && $color <= 7 ? $color : 0);
         $this->templateRenderer->addDefaultParam(
             TemplateRendererInterface::TEMPLATE_ALL,
             'color',
