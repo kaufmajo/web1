@@ -13,11 +13,11 @@ interface DbRunnerInterface
 {
     public function getDb(): DbAdapter;
 
-    public function executeSelect(SqlInterface|string $select, bool $logSqlString = false): ?ResultInterface;
+    public function executeSelect(SqlInterface|string $select): ?ResultInterface;
 
-    public function executeCommand(SqlInterface|string $command, bool $logSqlString = false): ResultInterface;
+    public function executeCommand(SqlInterface|string $command): ResultInterface;
 
-    public function executeSql(SqlInterface|string $query, bool $logSqlString = false): ResultInterface;
+    public function executeSql(SqlInterface|string $query): ResultInterface;
 
     public function whereLikeSearchWithSqlObject(string $suchtext, array $columns): ?Where;
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Model;
 
-use App\Traits\Aware\LoggerAwareTrait;
 use Laminas\Db\Adapter\Adapter as DbAdapter;
 use Laminas\Db\Adapter\Driver\ResultInterface;
 use Laminas\Db\Sql\Predicate\Like;
@@ -22,8 +21,6 @@ use function trim;
 
 class DbRunner implements DbRunnerInterface
 {
-    use LoggerAwareTrait;
-
     protected DbAdapter $db;
 
     public function __construct(DbAdapter $db)
@@ -41,9 +38,9 @@ class DbRunner implements DbRunnerInterface
         return $this->db;
     }
 
-    public function executeSelect(SqlInterface|string $select, bool $logSqlString = false): ?ResultInterface
+    public function executeSelect(SqlInterface|string $select): ?ResultInterface
     {
-        $result = $this->executeSql($select, $logSqlString);
+        $result = $this->executeSql($select);
 
         if (! $result->isQueryResult()) {
             return null;
@@ -52,15 +49,13 @@ class DbRunner implements DbRunnerInterface
         return $result;
     }
 
-    public function executeCommand(SqlInterface|string $command, bool $logSqlString = false): ResultInterface
+    public function executeCommand(SqlInterface|string $command): ResultInterface
     {
-        return $this->executeSql($command, $logSqlString);
+        return $this->executeSql($command);
     }
 
-    public function executeSql(SqlInterface|string $query, bool $logSqlString = false): ResultInterface
+    public function executeSql(SqlInterface|string $query): ResultInterface
     {
-        $this->logSql($query, $logSqlString);
-
         if (is_string($query)) {
             $statement = $this->db->query($query);
         } else {
@@ -70,19 +65,6 @@ class DbRunner implements DbRunnerInterface
         }
 
         return $statement->execute();
-    }
-
-    protected function logSql(SqlInterface|string $query, bool $logSqlString): void
-    {
-        if (! $logSqlString) {
-            return;
-        }
-
-        if (is_string($query)) {
-            $this->getLogger()->debug($query);
-        } else {
-            $this->getLogger()->debug($query->getSqlString($this->db->getPlatform()));
-        }
     }
 
     public function whereLikeSearchWithSqlObject(string $suchtext, array $columns): ?Where

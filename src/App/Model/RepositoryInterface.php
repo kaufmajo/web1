@@ -15,9 +15,9 @@ interface RepositoryInterface
 
     public function mapReferences(?EntityInterface $entity): ?EntityInterface;
 
-    public function find(SqlInterface|string $select, bool $logSqlString = false): HydratingResultSet;
+    public function find(SqlInterface|string $select): HydratingResultSet;
 
-    public function findFirst(SqlInterface|string $select, bool $logSqlString = false);
+    public function findFirst(SqlInterface|string $select);
 
-    public function fetch(SqlInterface|string $select, bool $logSqlString = false): ResultSet;
+    public function fetch(SqlInterface|string $select): ResultSet;
 }

@@ -24,11 +24,11 @@ class DbRunnerFactory implements FactoryInterface
         $db = $container->get(AdapterInterface::class);
 
         // logger
-        $logger = $container->get(LoggerInterface::class);
+        //$logger = $container->get(LoggerInterface::class);
 
         // return
         $dbRunner = new DbRunner($db);
-        $dbRunner->setLogger($logger);
+        //$dbRunner->setLogger($logger);
 
         return $dbRunner;
     }

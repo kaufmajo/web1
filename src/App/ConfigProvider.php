@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Delegator\DbRunnerLoggerDelegatorFactory;
 use App\Listener\LoggingErrorListenerDelegatorFactory;
 use Laminas\Stratigility\Middleware\ErrorHandler;
 use Mezzio\Authentication\AuthenticationInterface;
@@ -75,9 +76,8 @@ class ConfigProvider
                 \Psr\Log\LoggerInterface::class => Factory\LoggerFactory::class,
             ],
             'delegators' => [
-                ErrorHandler::class => [
-                    LoggingErrorListenerDelegatorFactory::class,
-                ],
+                ErrorHandler::class => [LoggingErrorListenerDelegatorFactory::class],
+                Model\DbRunner::class => [DbRunnerLoggerDelegatorFactory::class],
             ],
         ];
     }

@@ -22,25 +22,25 @@ abstract class AbstractCommand implements CommandInterface
         $this->hydrator = $hydrator;
     }
 
-    public function insert(Insert|string $insert, ?int &$generatedValue, bool $logSqlString = false): int
+    public function insert(Insert|string $insert, ?int &$generatedValue): int
     {
-        $result = $this->dbRunner->executeCommand($insert, $logSqlString);
+        $result = $this->dbRunner->executeCommand($insert);
 
         $generatedValue = (int) $result->getGeneratedValue();
 
         return $result->getAffectedRows();
     }
 
-    public function update(Update|string $update, bool $logSqlString = false): int
+    public function update(Update|string $update): int
     {
-        $result = $this->dbRunner->executeCommand($update, $logSqlString);
+        $result = $this->dbRunner->executeCommand($update);
 
         return $result->getAffectedRows();
     }
 
-    public function delete(Delete|string $delete, bool $logSqlString = false): int
+    public function delete(Delete|string $delete): int
     {
-        $result = $this->dbRunner->executeCommand($delete, $logSqlString);
+        $result = $this->dbRunner->executeCommand($delete);
 
         return $result->getAffectedRows();
     }

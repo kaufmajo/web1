@@ -43,9 +43,9 @@ abstract class AbstractRepository implements RepositoryInterface
         $this->prototype = $prototype;
     }
 
-    public function find(SqlInterface|string $select, bool $logSqlString = false): HydratingResultSet
+    public function find(SqlInterface|string $select): HydratingResultSet
     {
-        $result = $this->dbRunner->executeSelect($select, $logSqlString);
+        $result = $this->dbRunner->executeSelect($select);
 
         $resultSet = new HydratingResultSet($this->hydrator, $this->prototype);
 
@@ -54,16 +54,16 @@ abstract class AbstractRepository implements RepositoryInterface
         return $resultSet;
     }
 
-    public function findFirst(SqlInterface|string $select, bool $logSqlString = false): ?EntityInterface
+    public function findFirst(SqlInterface|string $select): ?EntityInterface
     {
-        $result = $this->find($select, $logSqlString)->current();
+        $result = $this->find($select)->current();
 
         return ! $result instanceof EntityInterface ? null : $result;
     }
 
-    public function fetch(SqlInterface|string $select, bool $logSqlString = false): ResultSet
+    public function fetch(SqlInterface|string $select): ResultSet
     {
-        $result = $this->dbRunner->executeSelect($select, $logSqlString);
+        $result = $this->dbRunner->executeSelect($select);
 
         $resultSet = new ResultSet();
 

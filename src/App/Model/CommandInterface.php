@@ -13,9 +13,9 @@ interface CommandInterface
 {
     public function getEntityData(EntityInterface $entity);
 
-    public function insert(Insert|string $insert, int &$generatedValue, bool $logSqlString = false): int;
+    public function insert(Insert|string $insert, int &$generatedValue): int;
 
-    public function update(Update|string $update, bool $logSqlString = false): int;
+    public function update(Update|string $update): int;
 
-    public function delete(Delete|string $delete, bool $logSqlString = false): int;
+    public function delete(Delete|string $delete): int;
 }
