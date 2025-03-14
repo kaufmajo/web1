@@ -265,7 +265,7 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
         //  echo $select->getSqlString($this->dbRunner->getDb()->platform);
         //  die;
 
-        return $this->fetch($select, false);
+        return $this->fetch($select, true);
     }
 
     public function fetchMitvon(array $params = [], string $order = 'termin_mitvon ASC'): ResultSet

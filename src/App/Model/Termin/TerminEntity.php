@@ -423,6 +423,11 @@ class TerminEntity extends AbstractEntity implements TerminEntityInterface
         return (bool) $this->getTerminSerieIntervall();
     }
 
+    public function isDatumThisYear(): bool
+    {
+        return (new DateTime($this->getTerminDatumStart()))->format('Y') === (new DateTime())->format('Y');
+    }
+
     public function getIntervalDifference(): DateInterval
     {
         $startTermin = new DateTime($this->getTerminDatumStart());

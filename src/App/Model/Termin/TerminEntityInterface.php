@@ -117,9 +117,11 @@ interface TerminEntityInterface extends EntityInterface
 
     public function setTerminNotiz(?string $value);
 
+    public function getEntityLabel();
+
     public function isSerie(): bool;
 
-    public function getIntervalDifference(): DateInterval;
+    public function isDatumThisYear(): bool;
 
-    public function getEntityLabel();
+    public function getIntervalDifference(): DateInterval;
 }

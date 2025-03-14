@@ -9,6 +9,7 @@ use Laminas\ServiceManager\Factory\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Psr\Log\LoggerInterface;
 
 class DbRunnerFactory implements FactoryInterface
 {
@@ -23,7 +24,7 @@ class DbRunnerFactory implements FactoryInterface
         $db = $container->get(AdapterInterface::class);
 
         // logger
-        $logger = $container->get('DbLogger');
+        $logger = $container->get(LoggerInterface::class);
 
         // return
         $dbRunner = new DbRunner($db);

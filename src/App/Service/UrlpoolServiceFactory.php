@@ -9,6 +9,7 @@ use Mezzio\Helper\UrlHelper;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Psr\Log\LoggerInterface;
 
 class UrlpoolServiceFactory implements FactoryInterface
 {
@@ -20,7 +21,7 @@ class UrlpoolServiceFactory implements FactoryInterface
     public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): UrlpoolService
     {
         // logger
-        $logger = $container->get('AppLogger');
+        $logger = $container->get(LoggerInterface::class);
 
         // urlHelper
         $urlHelper = $container->get(UrlHelper::class);

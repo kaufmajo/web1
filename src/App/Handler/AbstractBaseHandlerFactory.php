@@ -8,6 +8,7 @@ use App\Service\UrlpoolService;
 use Mezzio\Helper\UrlHelper;
 use Mezzio\Template\TemplateRendererInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 
 class AbstractBaseHandlerFactory
 {
@@ -17,7 +18,7 @@ class AbstractBaseHandlerFactory
         $handler->setConfig($container->get('config'));
 
         // logger
-        $handler->setLogger($container->get('AppLogger'));
+        $handler->setLogger($container->get(LoggerInterface::class));
 
         // renderer
         $handler->setTemplateRenderer($container->get(TemplateRendererInterface::class));

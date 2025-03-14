@@ -25,7 +25,11 @@ $terminEntity = $terminEntity;
     <div class="d-flex flex-column min-vh-100 justify-content-center align-items-center">
         <div class="m-1 text-center" style="max-width: 1400px;">
             <h3 class="fw-light">
-                <?= $this->escape(HelperService::format_displayDate($terminEntity->getTerminDatumstart(), $terminEntity->getTerminDatumEnde())) ?>
+                <?= $this->escape(HelperService::format_displayDate($terminEntity->getTerminDatumstart(), $terminEntity->getTerminDatumEnde(), [
+                    'single' => $terminEntity->isDatumThisYear() ? 'd MMMM' : 'd MMMM yy',
+                    'left' => $terminEntity->isDatumThisYear() ? 'd [MMMM]' : 'd [MMMM yy]',
+                    'right' => $terminEntity->isDatumThisYear() ? 'd MMMM' : 'd MMMM yy'
+                ])) ?>
                 <?php if (!$terminEntity->getTerminZeitGanztags()) : ?>
                     - <?= $this->escape(HelperService::format_displayTime($terminEntity->getTerminZeitstart())) ?>
                 <?php endif; ?>

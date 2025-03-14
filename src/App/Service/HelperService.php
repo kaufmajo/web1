@@ -86,6 +86,9 @@ class HelperService
 
             if ($datumStart->format('Y') === $datumEnde->format('Y') && $datumStart->format('n') === $datumEnde->format('n')) {
                 $left =  substr_replace($left, '', strpos($left, '['), strpos($left, ']') - strpos($left, '[') + 1);
+            }else{
+                $left =  substr_replace($left, '', strpos($left, '['),  1);
+                $left =  substr_replace($left, '', strpos($left, ']'),  1);
             }
 
             return $type === self::CONST_FORMAT_DATE_TYPE_DTF

@@ -71,6 +71,8 @@ class ConfigProvider
                 Plates\Extension\MediaExtension::class => Plates\Extension\MediaExtensionFactory::class,
                 Plates\Extension\QuoteExtension::class => Plates\Extension\QuoteExtensionFactory::class,
                 Plates\Extension\UrlpoolExtension::class => Plates\Extension\UrlpoolExtensionFactory::class,
+                // Logger
+                \Psr\Log\LoggerInterface::class => Factory\LoggerFactory::class,
             ],
             'delegators' => [
                 ErrorHandler::class => [

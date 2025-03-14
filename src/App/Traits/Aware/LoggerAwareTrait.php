@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Traits\Aware;
 
-use Laminas\Log\LoggerInterface;
+use Psr\Log\LoggerInterface;
 
 trait LoggerAwareTrait
 {
