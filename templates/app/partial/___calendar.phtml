@@ -137,12 +137,16 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                                         </a>
                                     <?php endif ?>
                                     <?php if ((new DateTime($termin['datum_datum']))->format('Y-m-d') !== (new DateTime())->format('Y-m-d')) : ?>
-                                        <?php if ($termin['_is_new']) : ?>
-                                            <!-- new indicator -->
-                                            <span class="badge <?= $this->color()['text-bg-indicator'] ?> fw-bold mt-1 d-table">Neu</span>
-                                        <?php elseif ($termin['_is_updated']) : ?>
-                                            <!-- update indicator -->
-                                            <span class="badge <?= $this->color()['text-bg-indicator'] ?> fw-bold mt-1 d-table">Aktualisiert</span>
+                                        <?php if ($termin['_is_new'] || $termin['_is_updated']) : ?>
+                                            <div class="fs-6">
+                                                <?php if ($termin['_is_new']) : ?>
+                                                    <!-- new indicator -->
+                                                    <span class="badge <?= $this->color()['text-bg-indicator'] ?> fw-bold mt-1">Neu</span>
+                                                <?php elseif ($termin['_is_updated']) : ?>
+                                                    <!-- update indicator -->
+                                                    <span class="badge <?= $this->color()['text-bg-indicator'] ?> fw-bold mt-1">Aktualisiert</span>
+                                                <?php endif; ?>
+                                            </div>
                                         <?php endif; ?>
                                     <?php endif; ?>
                                     <?php $this->insert('partial::wrappertags', ['type' => 'close', 'tags' => $wrapperTag]) ?>
