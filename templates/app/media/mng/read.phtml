@@ -1,16 +1,12 @@
 <?php
-
 use App\Model\Media\MediaEntity;
 use App\Provider\MediaStorageProvider;
 use App\Service\HelperService;
-
 ?>
 <?php $this->layout('layout::default', ['title' => 'EGLi (Manage) - Media']) ?>
-
 <?php $this->push('stylesheet') ?>
 <link href="/css/app/mng-media-read-index.css?u=<?= REFRESH_STATIC_FILES ?>" rel="stylesheet">
 <?php $this->end() ?>
-
 <!-- logout -->
 <nav class="navbar navbar-dark bg-info mb-3">
     <div class="container-fluid">

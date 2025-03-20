@@ -51,15 +51,6 @@ class TerminCalendarHandler extends AbstractTerminHandler
         return new HtmlResponse($this->templateRenderer->render('app::termin/def/calendar', $viewData), 200);
     }
 
-    public function getMappedTerminSearchValues(): array
-    {
-        return $this->getMappedDefSearchValues([
-            'anzeige'   => true,
-            'start'     => (new DateTime())->format('Y-m-d'),
-            'suchtext'  => $formData['search_suchtext'] ?? '',
-        ]);
-    }
-
     public function getMappedCalendarSearchValues(string $date): array
     {
         return $this->getMappedDefSearchValues([

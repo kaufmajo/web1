@@ -60,17 +60,12 @@ return function (Application $app, MiddlewareFactory $factory, ContainerInterfac
     $app->pipe(HistoryMiddleware::class);
     $app->pipe(RedirectMiddleware::class);
     $app->pipe(UrlpoolMiddleware::class);
-
+    
     // Register the routing middleware in the middleware pipeline.
     // This middleware registers the Mezzio\Router\RouteResult request attribute.
     $app->pipe(RouteMiddleware::class);
 
-    // Add this within the callback, before the routing middleware:
-    $app->pipe(path('/manage', $factory->pipeline(
-        AuthenticationMiddleware::class,
-        AuthorizationMiddleware::class,
-    )));
-
+    // ...
     $app->pipe(TemplateDefaultsMiddleware::class);
 
     // The following handle routing failures for common conditions:
@@ -92,6 +87,12 @@ return function (Application $app, MiddlewareFactory $factory, ContainerInterfac
     // - route-based authentication
     // - route-based validation
     // - etc.
+
+    // Add this within the callback, before the routing middleware:
+    $app->pipe(path('/manage', $factory->pipeline(
+        AuthenticationMiddleware::class,
+        AuthorizationMiddleware::class,
+    )));
 
     // Register the dispatch middleware in the middleware pipeline
     $app->pipe(DispatchMiddleware::class);

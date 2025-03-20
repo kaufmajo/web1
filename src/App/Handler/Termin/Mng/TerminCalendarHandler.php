@@ -7,30 +7,21 @@ namespace App\Handler\Termin\Mng;
 use App\Handler\Termin\AbstractTerminHandler;
 use App\Model\Termin\TerminCollection;
 use App\Service\HelperService;
-use App\Traits\Aware\FormStorageAwareTrait;
-use App\Traits\Aware\MediaRepositoryAwareTrait;
-use App\Traits\Aware\TerminRepositoryAwareTrait;
 use DateTime;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\Diactoros\Response\TextResponse;
-use Laminas\Form\FormInterface;
 use Laminas\Validator\Date;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 class TerminCalendarHandler extends AbstractTerminHandler
 {
-    use FormStorageAwareTrait;
-    use MediaRepositoryAwareTrait;
-    use TerminRepositoryAwareTrait;
-
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $this->getUrlpoolService()->save();
 
         // param
         $dateParam = (string)($request->getQueryParams()['date'] ?? (new DateTime())->format('Y-m-d'));
-        
         $terminIdParam = (int)($request->getQueryParams()['id'] ?? 0);
 
         if (!(new Date())->isValid($dateParam)) {
@@ -45,7 +36,7 @@ class TerminCalendarHandler extends AbstractTerminHandler
 
         // view
         $viewData = [
-            'terminCollection'      => $terminCollection,
+            'terminCollection' => $terminCollection,
             'terminIdParam' => $terminIdParam,
             'dateParam' => $dateParam,
         ];
@@ -56,20 +47,8 @@ class TerminCalendarHandler extends AbstractTerminHandler
         // init collection
         $terminCollection->init($terminResultSet->toArray());
 
-        return new HtmlResponse(
-            $this->templateRenderer->render('app::termin/mng/calendar', $viewData)
-        );
-    }
-
-    public function getTerminSearchForm(array $params): FormInterface
-    {
-        $form = $this->getForm('termin-mng-search-form');
-        $form->setAttribute('method', 'GET');
-        $form->setAttribute('action', '/manage/termin-calendar');
-
-        $form->setData($params);
-
-        return $form;
+        // send response to client
+        return new HtmlResponse($this->templateRenderer->render('app::termin/mng/calendar', $viewData));
     }
 
     public function getMappedTerminSearchValues(string $date): array

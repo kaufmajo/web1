@@ -17,7 +17,6 @@ use function array_merge;
 class MediaReadHandler extends AbstractBaseHandler
 {
     use FormStorageAwareTrait;
-
     use MediaRepositoryAwareTrait;
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -26,7 +25,6 @@ class MediaReadHandler extends AbstractBaseHandler
 
         // init
         $myInitConfig = $this->getMyInitConfig();
-
         $mediaRepository = $this->getMediaRepository();
 
         // datalist data
@@ -50,9 +48,7 @@ class MediaReadHandler extends AbstractBaseHandler
 
         // ...
         $formData = $mngMediaSearchForm->getData();
-
         $searchValues = $this->getMappedMediaSearchValues($formData);
-
         $viewData['searchValues'] = $searchValues;
 
         // fetch media
@@ -61,9 +57,7 @@ class MediaReadHandler extends AbstractBaseHandler
         // set view data
         $viewData['mediaArray'] = $mediaResultSet->toArray();
 
-        return new HtmlResponse(
-            $this->templateRenderer->render('app::media/mng/read', $viewData)
-        );
+        return new HtmlResponse($this->templateRenderer->render('app::media/mng/read', $viewData));
     }
 
     public function getMediaSearchForm(array $params): FormInterface
