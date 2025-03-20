@@ -16,8 +16,8 @@ class HomePhpinfoHandler extends AbstractBaseHandler
 {
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        //phpinfo(INFO_ALL);
-        phpinfo(INFO_GENERAL);
+        phpinfo(INFO_ALL);
+        //phpinfo(INFO_GENERAL);
 
         exit;
     }

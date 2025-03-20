@@ -11,11 +11,13 @@ if (PHP_SAPI === 'cli-server' && $_SERVER['SCRIPT_FILENAME'] !== __FILE__) {
     return false;
 }
 
+//ini_set ( "session.cookie_lifetime" , 15);
+
 // -------------------------
 // start custom bootstrap code
 // -------------------------
 
-const REFRESH_STATIC_FILES = '26';
+const REFRESH_STATIC_FILES = '27';
 
 function ddd(mixed $var): never
 {
@@ -29,21 +31,18 @@ function ddd(mixed $var): never
 date_default_timezone_set('Europe/Zurich');
 
 // define application environment
-if (
-    isset($_SERVER['HTTP_HOST']) &&
-    ($_SERVER['HTTP_HOST'] === 'web1.development.net:8889')
-) {
+if (isset($_SERVER['HTTP_HOST']) &&     ($_SERVER['HTTP_HOST'] === 'localhost:8888')) {
     // error handling for development
-    error_reporting(E_ALL & ~E_USER_DEPRECATED & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE);
+    error_reporting(E_ALL & ~E_USER_DEPRECATED & ~E_DEPRECATED & ~E_NOTICE);
     ini_set("display_errors", "1"); // oder 1 = on / 0 = off
 
     // app settings for development
     define('APPLICATION_ENV', 'development');
-    define('APPLICATION_HOST', 'web1.development.net');
+    define('APPLICATION_HOST', 'localhost:8888');
     setlocale(LC_TIME, "de_CH.UTF8");
 } else {
     // error handling for development
-    error_reporting(~E_USER_DEPRECATED & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE);
+    error_reporting(~E_USER_DEPRECATED & ~E_DEPRECATED & ~E_NOTICE);
     //ini_set("display_errors", "1"); // oder 1 = on / 0 = off
 
     // app settings for production
