@@ -11,7 +11,7 @@ if (PHP_SAPI === 'cli-server' && $_SERVER['SCRIPT_FILENAME'] !== __FILE__) {
     return false;
 }
 
-ini_set ( "session.cookie_lifetime" , 5);
+//ini_set ( "session.cookie_lifetime" , 0);
 
 // -------------------------
 // start custom bootstrap code
