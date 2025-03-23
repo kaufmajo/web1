@@ -134,7 +134,7 @@ $ sudo locale-gen de_CH.UTF-8
 
 ## PHP
 
-Version: 8.3
+Version: 8.4
 
 ### Install PHP
 
@@ -145,16 +145,16 @@ $ apt-get install php libapache2-mod-php
 ### Install PHP Modules for Apache
 
 ```shell
-$ apt-get install php8.3-mbstring
-$ apt-get install php8.3-curl
-$ apt-get install php8.3-mysql
-$ apt-get install php8.3-gd
-$ apt-get install php8.3-intl
-$ apt-get install php8.3-tidy
-$ apt-get install php8.3-xml
-$ apt-get install php8.3-zip
-$ apt-get install php8.3-sqlite
-$ apt-get install php8.3-xdebug # only required on dev server
+$ apt-get install php8.4-mbstring
+$ apt-get install php8.4-curl
+$ apt-get install php8.4-mysql
+$ apt-get install php8.4-gd
+$ apt-get install php8.4-intl
+$ apt-get install php8.4-tidy
+$ apt-get install php8.4-xml
+$ apt-get install php8.4-zip
+$ apt-get install php8.4-sqlite
+$ apt-get install php8.4-xdebug # only required on dev server
 ```
 
 ### Update php.ini
@@ -194,8 +194,8 @@ sudo update-alternatives --config php
 Activate and change default php version on Apache:
 
 ```shell
-sudo a2dismod php8.2 
-sudo a2enmod php8.3 
+sudo a2dismod php8.3 
+sudo a2enmod php8.4 
 sudo service apache2 restart 
 ```
 
