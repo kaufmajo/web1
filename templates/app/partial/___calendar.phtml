@@ -16,6 +16,7 @@ $elementAttributeService = new AttributeService([], $attributes ?? []);
 // user
 $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentity() : false;
 
+var_dump($loggedIn);
 ?>
 <!-- container -->
 <div class="container-fluid p-0">

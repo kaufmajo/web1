@@ -65,9 +65,6 @@ return function (Application $app, MiddlewareFactory $factory, ContainerInterfac
     // This middleware registers the Mezzio\Router\RouteResult request attribute.
     $app->pipe(RouteMiddleware::class);
 
-    // ...
-    $app->pipe(TemplateDefaultsMiddleware::class);
-
     // The following handle routing failures for common conditions:
     // - HEAD request but no routes answer that method
     // - OPTIONS request but no routes answer that method
@@ -93,6 +90,9 @@ return function (Application $app, MiddlewareFactory $factory, ContainerInterfac
         AuthenticationMiddleware::class,
         AuthorizationMiddleware::class,
     )));
+
+    // this must be called after authntication middleware
+    $app->pipe(TemplateDefaultsMiddleware::class);
 
     // Register the dispatch middleware in the middleware pipeline
     $app->pipe(DispatchMiddleware::class);
