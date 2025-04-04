@@ -34,6 +34,13 @@ ol>li {
     }
 }
 
+@media ((min-width: 1400px) and (max-height: 768px)) {
+
+    ol>li {
+        min-height: auto;
+    }
+}
+
 .highlight {
     transform: rotateY(360deg);
     transition: 2s linear;
