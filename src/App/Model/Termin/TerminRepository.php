@@ -130,26 +130,32 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
     {
         $where = new Where();
 
+        $nest = $where->nest();
+
         // start
         if (isset($params['start']) && !empty($params['start'])) {
-            $where->expression('`t3`.`datum_datum` >= ?', $params['start']);
+            $nest->expression('`t3`.`datum_datum` >= ?', $params['start']);
         }
 
         // ende
         if (isset($params['ende']) && !empty($params['ende'])) {
-            $where->expression('`t3`.`datum_datum` <= ?', $params['ende']);
+            $nest->expression('`t3`.`datum_datum` <= ?', $params['ende']);
         }
 
         // anzeige
         if (isset($params['anzeige']) && $params['anzeige']) {
-            $where
+            $nest
                 ->isNotNull('t4.termin_id');
         }
 
         // tage
         if (isset($params['tage']) && !empty($params['tage'])) {
-            $where->in('t3.datum_wochentag', $params['tage']);
+            $nest->in('t3.datum_wochentag', $params['tage']);
         }
+
+        $nest->unnest();
+
+        $where->or->expression('`t3`.`datum_datum` = CURDATE()');
 
         return $where;
     }
@@ -262,8 +268,8 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
             $select->limit($params['limit']);
         }
 
-        //  echo $select->getSqlString($this->dbRunner->getDb()->platform);
-        //  die;
+        // echo $select->getSqlString($this->dbRunner->getDb()->platform);
+        // die;
 
         return $this->fetch($select, false);
     }

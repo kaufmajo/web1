@@ -6,6 +6,7 @@ namespace App\Handler\Termin\Mng;
 
 use App\Handler\Termin\AbstractTerminHandler;
 use App\Model\Termin\TerminCollection;
+use App\Service\HelperService;
 use App\Traits\Aware\FormStorageAwareTrait;
 use App\Traits\Aware\TerminRepositoryAwareTrait;
 use Laminas\Diactoros\Response\HtmlResponse;
@@ -69,7 +70,7 @@ class TerminSearchHandler extends AbstractTerminHandler
     {
         $form = $this->getForm('def-termin-search-form');
         $form->setAttribute('method', 'GET');
-        $form->setAttribute('action', '/manage/termin-search');
+        $form->setAttribute('action', '/manage/termin-search#' . HelperService::getAnchorString(date('Y-m-d')));
 
         // set default data
         $form->setData($params);
