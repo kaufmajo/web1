@@ -130,32 +130,26 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
     {
         $where = new Where();
 
-        $nest = $where->nest();
-
         // start
         if (isset($params['start']) && !empty($params['start'])) {
-            $nest->expression('`t3`.`datum_datum` >= ?', $params['start']);
+            $where->expression('`t3`.`datum_datum` >= ?', $params['start']);
         }
 
         // ende
         if (isset($params['ende']) && !empty($params['ende'])) {
-            $nest->expression('`t3`.`datum_datum` <= ?', $params['ende']);
+            $where->expression('`t3`.`datum_datum` <= ?', $params['ende']);
         }
 
         // anzeige
         if (isset($params['anzeige']) && $params['anzeige']) {
-            $nest
+            $where
                 ->isNotNull('t4.termin_id');
         }
 
         // tage
         if (isset($params['tage']) && !empty($params['tage'])) {
-            $nest->in('t3.datum_wochentag', $params['tage']);
+            $where->in('t3.datum_wochentag', $params['tage']);
         }
-
-        $nest->unnest();
-
-        $where->or->expression('`t3`.`datum_datum` = CURDATE()');
 
         return $where;
     }
@@ -268,10 +262,9 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
             $select->limit($params['limit']);
         }
 
-        // echo $select->getSqlString($this->dbRunner->getDb()->platform);
-        // die;
+        // ddd($select->getSqlString($this->dbRunner->getDb()->platform));
 
-        return $this->fetch($select, false);
+        return $this->fetch($select);
     }
 
     public function fetchMitvon(array $params = [], string $order = 'termin_mitvon ASC'): ResultSet
@@ -294,9 +287,9 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
             ->isNotNull('t4.termin_mitvon')
             ->notEqualTo('t4.termin_mitvon', '');
 
-        //        ddd($select->getSqlString($this->dbRunner->getDb()->platform));
+        //ddd($select->getSqlString($this->dbRunner->getDb()->platform));
 
-        return $this->fetch($select, false);
+        return $this->fetch($select);
     }
 
     public function fetchKategorie(array $params = [], string $order = 'termin_kategorie ASC'): ResultSet
@@ -319,7 +312,7 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
             ->isNotNull('t4.termin_kategorie')
             ->notEqualTo('t4.termin_kategorie', '');
 
-        return $this->fetch($select, false);
+        return $this->fetch($select);
     }
 
     public function fetchBetreff(array $params = [], string $order = 'termin_betreff ASC'): ResultSet
@@ -342,7 +335,7 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
             ->isNotNull('t4.termin_betreff')
             ->notEqualTo('t4.termin_betreff', '');
 
-        return $this->fetch($select, false);
+        return $this->fetch($select);
     }
 
     public function fetchLink(array $params = [], string $order = 'termin_link ASC'): ResultSet
@@ -365,7 +358,7 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
             ->isNotNull('t4.termin_link')
             ->notEqualTo('t4.termin_link', '');
 
-        return $this->fetch($select, false);
+        return $this->fetch($select);
     }
 
     public function fetchLinkTitel(array $params = [], string $order = 'termin_link_titel ASC'): ResultSet
@@ -388,7 +381,7 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
             ->isNotNull('t4.termin_link_titel')
             ->notEqualTo('t4.termin_link_titel', '');
 
-        return $this->fetch($select, false);
+        return $this->fetch($select);
     }
 
     public function fetchImage(array $params = [], string $order = 'termin_image ASC'): ResultSet
@@ -435,6 +428,6 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
         //        echo $select->getSqlString($this->dbRunner->getDb()->platform);
         //        ddd("STOP");
 
-        return $this->fetch($select, false);
+        return $this->fetch($select);
     }
 }
