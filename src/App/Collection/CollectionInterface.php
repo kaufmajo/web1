@@ -19,5 +19,7 @@ interface CollectionInterface extends Countable, Iterator
 
     public function getNextKey(): int|string|null;
 
-    public function fromMemory(string $key, string $value): false|string;
+    public function pushToMemory(string $key, string $value): false|string;
+
+    public function isInMemory(string $key, string $value): bool;
 }

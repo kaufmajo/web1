@@ -155,7 +155,7 @@ abstract class AbstractCollection implements CollectionInterface
         return $this->lastKey === $this->currentKey;
     }
 
-    public function fromMemory(string $key, string $value): false|string
+    public function pushToMemory(string $key, string $value): false|string
     {
         if (!in_array($value, $this->memory[$key] ?? [])) {
 
@@ -165,5 +165,10 @@ abstract class AbstractCollection implements CollectionInterface
         }
 
         return false;
+    }
+
+    public function isInMemory(string $key, string $value): bool
+    {
+        return in_array($value, $this->memory[$key] ?? []);
     }
 }

@@ -9,15 +9,11 @@ use App\Model\DbRunnerInterface;
 use App\Model\Entity\EntityInterface;
 use App\Service\HelperService;
 use App\Traits\Aware\TerminRepositoryAwareTrait;
-use DateInterval;
-use DatePeriod;
 use DateTime;
 use Exception;
 use Laminas\Db\Sql;
 use Laminas\Hydrator\HydratorInterface;
 use RuntimeException;
-
-use function str_replace;
 
 class TerminCommand extends AbstractCommand implements TerminCommandInterface
 {

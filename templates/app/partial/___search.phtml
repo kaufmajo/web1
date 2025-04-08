@@ -61,9 +61,12 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                 $previous = $terminCollection->previous;
                 $wrapperTag = TerminStatusEnum::GESTRICHEN->value === $termin['termin_status'] ? ['del'] : [];
                 ?>
-                <!-- Start: Must be implmented -->
-                <!-- <?php if ($previous && $previous['datum_datum'] < date('Y-m-d') && $termin['datum_datum'] > date('Y-m-d')): ?>
-                    <div class="row" <?= HelperService::getAnchorAttribute($terminCollection->fromMemory('searchlist-anchor-date', $termin['datum_datum'])) ?>>
+                <?php if (
+                    !$terminCollection->isInMemory('searchlist-heute', $termin['datum_datum'])
+                    && $previous && $previous['datum_datum'] < date('Y-m-d')
+                    && $termin['datum_datum'] > date('Y-m-d')
+                ): ?>
+                    <div class="row" <?= HelperService::getAnchorAttribute($terminCollection->pushToMemory('searchlist-heute', date('Y-m-d'))) ?>>
                         <div class="col-12 fs-5 fw-light">
                             <div class="fs-6 d-flex justify-content-between w-100">
                                 <div>
@@ -75,10 +78,9 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                     <?php if (!$terminCollection->isLast()) : ?>
                         <hr class="my-3">
                     <?php endif; ?>
-                <?php endif ?> -->
-                <!-- Ende: Must be implmented -->
+                <?php endif ?>
                 <?php if ($terminCollection->hasTermin()) : ?>
-                    <div class="row" <?= HelperService::getAnchorAttribute($terminCollection->fromMemory('searchlist-anchor-date', $termin['datum_datum'])) ?>>
+                    <div class="row" <?= HelperService::getAnchorAttribute($terminCollection->pushToMemory('searchlist-anchor-date', $termin['datum_datum'])) ?>>
                         <div class="col-12 fs-5 fw-light">
                             <div class="fs-6 d-flex justify-content-between w-100">
                                 <div>
