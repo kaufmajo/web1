@@ -61,29 +61,30 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                 $previous = $terminCollection->previous;
                 $wrapperTag = TerminStatusEnum::GESTRICHEN->value === $termin['termin_status'] ? ['del'] : [];
                 ?>
-                <?php if (
-                    !$terminCollection->isInMemory('searchlist-heute', $termin['datum_datum'])
-                    && $previous && $previous['datum_datum'] < date('Y-m-d')
-                    && $termin['datum_datum'] > date('Y-m-d')
-                ): ?>
-                    <div class="row" <?= HelperService::getAnchorAttribute($terminCollection->pushToMemory('searchlist-heute', date('Y-m-d'))) ?>>
-                        <div class="col-12 fs-5 fw-light">
-                            <div class="fs-6 d-flex justify-content-between w-100">
-                                <div>
-                                    <span class="badge <?= $this->color()['text-bg-today'] ?> fw-bold">Heute</span>
+                <?php if ($terminCollection->hasTermin()) : ?>
+                    <?php if (
+                        !$terminCollection->isInMemory('searchlist-heute', $termin['datum_datum'])
+                        && $previous && $previous['datum_datum'] < date('Y-m-d')
+                        && $termin['datum_datum'] > date('Y-m-d')
+                    ): ?>
+                        <div class="row" <?= HelperService::getAnchorAttribute($terminCollection->pushToMemory('searchlist-heute', date('Y-m-d'))) ?>>
+                            <div class="col-12 fs-5 fw-light">
+                                <div class="fs-6 d-flex justify-content-between w-100">
+                                    <div>
+                                        <span class="badge <?= $this->color()['text-bg-today'] ?> fw-bold">Heute</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <?php if (!$terminCollection->isLast()) : ?>
                         <hr class="my-3">
-                    <?php endif; ?>
-                <?php endif ?>
-                <?php if ($terminCollection->hasTermin()) : ?>
+                    <?php endif ?>
                     <div class="row" <?= HelperService::getAnchorAttribute($terminCollection->pushToMemory('searchlist-anchor-date', $termin['datum_datum'])) ?>>
                         <div class="col-12 fs-5 fw-light">
                             <div class="fs-6 d-flex justify-content-between w-100">
                                 <div>
+                                    <?php if ($terminCollection->isDatumToday()) : ?>
+                                        <span class="badge <?= $this->color()['text-bg-today'] ?> fw-bold">Heute</span>
+                                    <?php endif ?>
                                     <?= HelperService::format_displayDate($termin['termin_datum_start'], $termin['termin_datum_ende'], [
                                         'single' => $terminCollection->isDatumThisYear() ? 'd MMMM' : 'd MMMM yy',
                                         'left' => $terminCollection->isDatumThisYear() ? 'd [MMMM]' : 'd [MMMM yy]',
