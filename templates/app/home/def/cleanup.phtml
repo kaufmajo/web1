@@ -4,19 +4,6 @@
 
 <?php $this->layout('layout::default', ['title' => 'EGLi - Cleanup']) ?>
 
-<!-- nav -->
-<nav class="navbar navbar-dark bg-danger mb-3">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold text-white" href="/manage/home-read">Home</a>
-        <a class="navbar-brand fw-bold text-white" href="/manage/home-initconfig">Config</a>
-        <a class="navbar-brand fw-bold text-white" href="/cleanup">Cleanup</a>
-        <a class="navbar-brand fw-bold text-white" href="/manage/home-phpinfo">PHP</a>
-        <?php if ($security) : ?>
-            <a class="navbar-brand fw-bold text-white" href="/app-logout">Abmelden</a>
-        <?php endif; ?>
-    </div>
-</nav>
-
 <!-- container -->
 <div class="container my-5">
     <h1 class="fw-bold">Cleanup</h1>

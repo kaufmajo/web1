@@ -1,4 +1,4 @@
-Use php-fpm php83
+#Use php-fpm php83
 
 RewriteEngine On
 # The following rule allows authentication to work with fast-cgi
