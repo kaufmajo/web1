@@ -63,11 +63,11 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                 ?>
                 <?php if ($terminCollection->hasTermin()) : ?>
                     <?php if (
-                        !$terminCollection->isInMemory('searchlist-heute', $termin['datum_datum'])
-                        && $previous && $previous['datum_datum'] < date('Y-m-d')
-                        && $termin['datum_datum'] > date('Y-m-d')
+                        !$terminCollection->isInMemory('searchlist-anchor-date', date('Y-m-d'))
+                        && $previous && $previous['datum_datum'] <= date('Y-m-d')
+                        && $termin['datum_datum'] >= date('Y-m-d')
                     ): ?>
-                        <div class="row" <?= HelperService::getAnchorAttribute($terminCollection->pushToMemory('searchlist-heute', date('Y-m-d'))) ?>>
+                        <div class="row" <?= HelperService::getAnchorAttribute($terminCollection->pushToMemory('searchlist-anchor-date', date('Y-m-d'))) ?>>
                             <div class="col-12 fs-5 fw-light">
                                 <div class="fs-6 d-flex justify-content-between w-100">
                                     <div>
@@ -82,9 +82,6 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                         <div class="col-12 fs-5 fw-light">
                             <div class="fs-6 d-flex justify-content-between w-100">
                                 <div>
-                                    <?php if ($terminCollection->isDatumToday()) : ?>
-                                        <span class="badge <?= $this->color()['text-bg-today'] ?> fw-bold">Heute</span>
-                                    <?php endif ?>
                                     <?= HelperService::format_displayDate($termin['termin_datum_start'], $termin['termin_datum_ende'], [
                                         'single' => $terminCollection->isDatumThisYear() ? 'd MMMM' : 'd MMMM yy',
                                         'left' => $terminCollection->isDatumThisYear() ? 'd [MMMM]' : 'd [MMMM yy]',
