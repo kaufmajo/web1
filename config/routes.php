@@ -41,8 +41,8 @@ return function (Application $app, MiddlewareFactory $factory, ContainerInterfac
     // app cleanup
 
     $app->route('/cleanup', [
-        #Mezzio\Authentication\AuthenticationMiddleware::class,
-        #Mezzio\Authorization\AuthorizationMiddleware::class,
+        Mezzio\Authentication\AuthenticationMiddleware::class,
+        Mezzio\Authorization\AuthorizationMiddleware::class,
         App\Middleware\TemplateDefaultsMiddleware::class,
         App\Handler\Home\Def\CleanupHandler::class,
     ], ['GET'], 'default.app.cleanup');

@@ -28,7 +28,7 @@ return [
                 'manage.termin.update',
             ],
             'admin'  => [
-                #'default.app.cleanup',
+                'default.app.cleanup',
                 'manage.home.read',
                 'manage.home.initconfig',
                 'manage.home.phpinfo',
