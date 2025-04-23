@@ -67,7 +67,7 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                         && $previous && $previous['datum_datum'] <= date('Y-m-d')
                         && $termin['datum_datum'] >= date('Y-m-d')
                     ): ?>
-                        <div class="row border-bottom <?= $this->color()['bg-main-subtle'] ?>" <?= HelperService::getAnchorAttribute($terminCollection->pushToMemory('searchlist-anchor-date', date('Y-m-d'))) ?>>
+                        <div class="row border-bottom <?= $this->color()['text-bg-indicator'] ?>" <?= HelperService::getAnchorAttribute($terminCollection->pushToMemory('searchlist-anchor-date', date('Y-m-d'))) ?>>
                             <div class="col-12 fs-5 fw-light text-center">
                                 <i class="bi bi-arrows-collapse"></i>
                             </div>

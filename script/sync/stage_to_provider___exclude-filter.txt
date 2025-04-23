@@ -16,3 +16,5 @@ web.config
 phpcs.xml
 phpcs.xml.dist
 phpunit.xml.dist
+
+.htaccess
