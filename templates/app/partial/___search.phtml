@@ -67,18 +67,13 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                         && $previous && $previous['datum_datum'] <= date('Y-m-d')
                         && $termin['datum_datum'] >= date('Y-m-d')
                     ): ?>
-                        <div class="row" <?= HelperService::getAnchorAttribute($terminCollection->pushToMemory('searchlist-anchor-date', date('Y-m-d'))) ?>>
-                            <div class="col-12 fs-5 fw-light">
-                                <div class="fs-6 d-flex justify-content-between w-100">
-                                    <div>
-                                        <span class="badge <?= $this->color()['text-bg-today'] ?> fw-bold">Heute</span>
-                                    </div>
-                                </div>
+                        <div class="row border-bottom <?= $this->color()['bg-main-subtle'] ?>" <?= HelperService::getAnchorAttribute($terminCollection->pushToMemory('searchlist-anchor-date', date('Y-m-d'))) ?>>
+                            <div class="col-12 fs-5 fw-light text-center">
+                                <i class="bi bi-arrows-collapse"></i>
                             </div>
                         </div>
-                        <hr class="my-3">
                     <?php endif ?>
-                    <div class="row" <?= HelperService::getAnchorAttribute($terminCollection->pushToMemory('searchlist-anchor-date', $termin['datum_datum'])) ?>>
+                    <div class="row py-3 <?= !$terminCollection->isLast() ? "border-bottom" : "" ?>" <?= HelperService::getAnchorAttribute($terminCollection->pushToMemory('searchlist-anchor-date', $termin['datum_datum'])) ?>>
                         <div class="col-12 fs-5 fw-light">
                             <div class="fs-6 d-flex justify-content-between w-100">
                                 <div>
@@ -117,9 +112,6 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                             <?php endif ?>
                         </div>
                     </div>
-                    <?php if (!$terminCollection->isLast()) : ?>
-                        <hr class="my-3">
-                    <?php endif; ?>
                 <?php endif ?>
                 <?php
                 $terminCollection->next();
