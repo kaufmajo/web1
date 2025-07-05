@@ -38,6 +38,12 @@ return function (Application $app, MiddlewareFactory $factory, ContainerInterfac
 
     $app->get('/', [App\Handler\Termin\Def\TerminCalendarHandler::class,], 'default.root');
 
+    // app test
+
+    $app->route('/test', [
+        App\Handler\Home\Def\TestHandler::class,
+    ], ['GET'], 'default.app.test');
+
     // app cleanup
 
     $app->route('/cleanup', [

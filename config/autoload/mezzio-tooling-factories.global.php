@@ -17,6 +17,7 @@ return [
             App\Handler\Auth\Def\LoginHandler::class       => App\Handler\Auth\Def\LoginHandlerFactory::class,
             App\Handler\Auth\Def\LogoutHandler::class      => App\Handler\Auth\Def\LogoutHandlerFactory::class,
             App\Handler\Home\Def\CleanupHandler::class     => App\Handler\Home\Def\CleanupHandlerFactory::class,
+            App\Handler\Home\Def\TestHandler::class     => App\Handler\Home\Def\TestHandlerFactory::class,
             App\Handler\Home\Mng\HomeReadHandler::class             => App\Handler\Home\Mng\HomeReadHandlerFactory::class,
             App\Handler\Home\Mng\HomeInitconfigHandler::class             => App\Handler\Home\Mng\HomeInitconfigHandlerFactory::class,
             App\Handler\Home\Mng\HomePhpinfoHandler::class             => App\Handler\Home\Mng\HomePhpinfoHandlerFactory::class,

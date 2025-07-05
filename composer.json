@@ -50,6 +50,7 @@
     "ext-intl": "*",
     "ext-tidy": "*",
     "composer/package-versions-deprecated": "1.11.99.4",
+    "doctrine/dbal": "^4.2",
     "eluceo/ical": "^2.11",
     "laminas/laminas-component-installer": "^2.1.1 || ^3.0",
     "laminas/laminas-config-aggregator": "^1.0",
