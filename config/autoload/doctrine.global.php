@@ -7,7 +7,6 @@ return [
     'doctrine' => [
         'connection' => [
             'dbname'   => 'evangel3_egli1',
-            'host'     => '127.0.0.1',
             'driver'   => 'pdo_mysql',
             // add charset, port, etc. as needed
         ],
