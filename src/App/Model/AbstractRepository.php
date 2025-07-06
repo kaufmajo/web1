@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Model;
 
 use App\Model\Entity\AbstractEntity;
+use App\Model\Entity\EntityHydratorInterface;
 use App\Model\Entity\EntityInterface;
+use App\Model\Termin\TerminEntityInterface;
+use Doctrine\DBAL\Connection;
 use Laminas\Db\ResultSet\HydratingResultSet;
 use Laminas\Db\ResultSet\ResultSet;
 use Laminas\Db\Sql\SqlInterface;
@@ -15,15 +18,21 @@ use function in_array;
 
 abstract class AbstractRepository implements RepositoryInterface
 {
+    protected Connection $dbalConnection;
+
     protected DbRunnerInterface $dbRunner;
+
+    private EntityHydratorInterface $entityHydrator;
 
     protected HydratorInterface $hydrator;
 
     protected EntityInterface $prototype;
 
-    public function __construct(DbRunnerInterface $dbRunner, HydratorInterface $hydrator, AbstractEntity $prototype)
+    public function __construct(Connection $dbalConnection, DbRunnerInterface $dbRunner, EntityHydratorInterface $entityHydrator, HydratorInterface $hydrator, AbstractEntity $prototype)
     {
+        $this->dbalConnection  = $dbalConnection;
         $this->dbRunner  = $dbRunner;
+        $this->entityHydrator  = $entityHydrator;
         $this->hydrator  = $hydrator;
         $this->prototype = $prototype;
     }
@@ -41,6 +50,16 @@ abstract class AbstractRepository implements RepositoryInterface
     public function setPrototype(AbstractEntity $prototype)
     {
         $this->prototype = $prototype;
+    }
+
+    public function hydrateEntity(array $data): TerminEntityInterface
+    {
+        return $this->entityHydrator->hydrate($data, clone $this->prototype);
+    }
+
+    public function extractEntity(TerminEntityInterface $entity): array
+    {
+        return $this->entityHydrator->extract($entity);
     }
 
     public function find(SqlInterface|string $select): HydratingResultSet

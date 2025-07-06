@@ -7,8 +7,10 @@ namespace App\Model\Termin;
 use App\Enum\TerminStatusEnum;
 use App\Model\AbstractRepository;
 use App\Model\DbRunnerInterface;
+use App\Model\Entity\EntityHydratorInterface;
 use App\Model\Entity\EntityInterface;
 use App\Traits\Aware\ConfigAwareTrait;
+use Doctrine\DBAL\Connection;
 use Laminas\Db\ResultSet\ResultSet;
 use Laminas\Db\Sql;
 use Laminas\Db\Sql\Where;
@@ -18,9 +20,9 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
 {
     use ConfigAwareTrait;
 
-    public function __construct(DbRunnerInterface $dbRunner, HydratorInterface $hydrator, TerminEntity $prototype)
+    public function __construct(Connection $dbalConnection, DbRunnerInterface $dbRunner, EntityHydratorInterface $entityHydrator, HydratorInterface $hydrator, TerminEntity $prototype)
     {
-        parent::__construct($dbRunner, $hydrator, $prototype);
+        parent::__construct($dbalConnection, $dbRunner, $entityHydrator, $hydrator, $prototype);
     }
 
     public function findEntityById(int $entityId): TerminEntityInterface
@@ -30,11 +32,22 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
 
     public function findTerminById(int $id): null|TerminEntityInterface|EntityInterface
     {
-        $sql    = new Sql\Sql($this->dbRunner->getDb());
-        $select = $sql->select(['t4' => 'tajo1_termin']);
-        $select->where(['t4.termin_id' => $id]);
+        $qb = $this->dbalConnection->createQueryBuilder();
 
-        $entity = $this->findFirst($select);
+        $qb
+            ->select('*')
+            ->from('tajo1_termin', 't4')
+            ->where('t4.termin_id = ?')
+            ->setParameter(0, $id);
+
+        $result = $qb->fetchAssociative();
+
+        $entity = $this->hydrateEntity($result);
+
+        // $sql    = new Sql\Sql($this->dbRunner->getDb());
+        // $select = $sql->select(['t4' => 'tajo1_termin']);
+        // $select->where(['t4.termin_id' => $id]);
+        //$entity = $this->findFirst($select);
 
         return $this->mapReferences($entity);
     }

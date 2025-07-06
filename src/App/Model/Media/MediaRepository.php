@@ -6,16 +6,18 @@ namespace App\Model\Media;
 
 use App\Model\AbstractRepository;
 use App\Model\DbRunnerInterface;
+use App\Model\Entity\EntityHydratorInterface;
 use App\Model\Entity\EntityInterface;
+use Doctrine\DBAL\Connection;
 use Laminas\Db\ResultSet\ResultSet;
 use Laminas\Db\Sql;
 use Laminas\Hydrator\HydratorInterface;
 
 class MediaRepository extends AbstractRepository implements MediaRepositoryInterface
 {
-    public function __construct(DbRunnerInterface $dbRunner, HydratorInterface $hydrator, MediaEntity $prototype)
+    public function __construct(Connection $dbalConnection, DbRunnerInterface $dbRunner, EntityHydratorInterface $entityHydrator, HydratorInterface $hydrator, MediaEntity $prototype)
     {
-        parent::__construct($dbRunner, $hydrator, $prototype);
+        parent::__construct($dbalConnection, $dbRunner, $entityHydrator, $hydrator, $prototype);
     }
 
     public function refreshEntity(MediaEntityInterface &$mediaEntity)
