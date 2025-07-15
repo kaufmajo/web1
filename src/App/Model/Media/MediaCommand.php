@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\Model\Media;
 
 use App\Model\AbstractCommand;
-use App\Model\DbRunnerInterface;
-use App\Model\Entity\EntityInterface;
+use App\Model\Entity\EntityHydratorInterface;
 use App\Provider\MediaStorageProvider;
 use App\Traits\Aware\MediaRepositoryAwareTrait;
-use Exception;
-use Laminas\Db\Sql;
+use Doctrine\DBAL\Connection;
 use Laminas\Diactoros\UploadedFile;
-use Laminas\Hydrator\HydratorInterface;
 use RuntimeException;
 
 use function rename;
@@ -21,61 +18,24 @@ class MediaCommand extends AbstractCommand implements MediaCommandInterface
 {
     use MediaRepositoryAwareTrait;
 
-    public function __construct(DbRunnerInterface $dbRunner, HydratorInterface $hydrator)
+    public function __construct(Connection $dbalConnection, EntityHydratorInterface $entityHydrator)
     {
-        parent::__construct($dbRunner, $hydrator);
-    }
-
-    public function getEntityData(EntityInterface $entity): array
-    {
-        return $this->hydrator->extract($entity);
+        parent::__construct($dbalConnection, $entityHydrator);
     }
 
     public function insertMedia(MediaEntityInterface $mediaEntity): int
     {
-        // process
-        $insert = new Sql\Insert('tajo1_media');
-        $insert->values($this->getEntityData($mediaEntity));
-
-        $affectedRows = $this->insert($insert, $generatedValue);
-
-        // set entity id
-        $mediaEntity->setEntityId((int) $generatedValue);
-
-        $mediaEntity->setLastEntityAction('insert');
-
-        return $affectedRows;
+        return $this->insert('tajo1_media', $mediaEntity);
     }
 
     public function updateMedia(MediaEntityInterface $mediaEntity): int
     {
-        if (! $mediaEntity->getMediaId()) {
-            throw new RuntimeException('Cannot update entity; missing identifier');
-        }
-
-        // process
-        $update = new Sql\Update('tajo1_media');
-        $update->where(['media_id = ?' => $mediaEntity->getMediaId()]);
-        $update->set($this->getEntityData($mediaEntity));
-
-        $affectedRows = $this->update($update);
-
-        $mediaEntity->setLastEntityAction('update');
-
-        return $affectedRows;
+        return $this->update('tajo1_media', $mediaEntity, 'media_id');
     }
 
     public function deleteMedia(MediaEntityInterface $mediaEntity): int
     {
-        if (! $mediaEntity->getMediaId()) {
-            throw new RuntimeException('Cannot delete entity; missing identifier');
-        }
-
-        // process
-        $delete = new Sql\Delete('tajo1_media');
-        $delete->where(['media_id = ?' => $mediaEntity->getMediaId()]);
-
-        return $this->delete($delete);
+        return $this->delete('tajo1_media', $mediaEntity, 'media_id');
     }
 
     public function saveMedia(MediaEntityInterface $mediaEntity): int
@@ -87,9 +47,6 @@ class MediaCommand extends AbstractCommand implements MediaCommandInterface
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function storeMedia(MediaEntityInterface $mediaEntity, UploadedFile $uploadedFile): void
     {
         // user selects a file
@@ -117,9 +74,6 @@ class MediaCommand extends AbstractCommand implements MediaCommandInterface
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function storeMediaVersion(MediaEntityInterface $mediaEntity): void
     {
         $mediaVersionEntity = $this->getMediaVersionEntity($mediaEntity);

@@ -6,7 +6,6 @@ namespace App\Model\Media;
 
 use App\Model\Entity\EntityInterface;
 use App\Model\EntityRepositoryInterface;
-use Laminas\Db\ResultSet\ResultSet;
 
 interface MediaRepositoryInterface extends EntityRepositoryInterface
 {
@@ -14,7 +13,7 @@ interface MediaRepositoryInterface extends EntityRepositoryInterface
 
     public function findMediaById(int $id): null|MediaEntityInterface|EntityInterface;
 
-    public function fetchMedia(array $params = [], string $order = ''): ResultSet;
+    public function fetchMedia(array $params = [], string $order = ''): array;
 
-    public function fetchTag(array $params = [], string $order = ''): ResultSet;
+    public function fetchTag(array $params = [], string $order = ''): array;
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Model\Termin;
 
-use App\Model\DbRunnerInterface;
+use Doctrine\DBAL\Connection;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -19,14 +19,13 @@ class TerminCommandFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): TerminCommand
     {
-        // dbRunner
-        $dbRunner = $container->get(DbRunnerInterface::class);
+        $dbalConnection = $container->get(Connection::class);
 
         // repository
         $terminRepository = $container->get(TerminRepositoryInterface::class);
 
         // return instance
-        $returnInstance = new TerminCommand($dbRunner, new TerminReflectionHydrator());
+        $returnInstance = new TerminCommand($dbalConnection, new TerminEntityHydrator());
         $returnInstance->setTerminRepository($terminRepository);
 
         return $returnInstance;

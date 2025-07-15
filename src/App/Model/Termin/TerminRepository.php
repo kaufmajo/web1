@@ -6,23 +6,22 @@ namespace App\Model\Termin;
 
 use App\Enum\TerminStatusEnum;
 use App\Model\AbstractRepository;
-use App\Model\DbRunnerInterface;
 use App\Model\Entity\EntityHydratorInterface;
 use App\Model\Entity\EntityInterface;
 use App\Traits\Aware\ConfigAwareTrait;
+use App\Traits\Aware\DbalAwareTrait;
 use Doctrine\DBAL\Connection;
-use Laminas\Db\ResultSet\ResultSet;
-use Laminas\Db\Sql;
-use Laminas\Db\Sql\Where;
-use Laminas\Hydrator\HydratorInterface;
+use Doctrine\DBAL\Query\QueryBuilder;
 
 class TerminRepository extends AbstractRepository implements TerminRepositoryInterface
 {
     use ConfigAwareTrait;
 
-    public function __construct(Connection $dbalConnection, DbRunnerInterface $dbRunner, EntityHydratorInterface $entityHydrator, HydratorInterface $hydrator, TerminEntity $prototype)
+    use DbalAwareTrait;
+
+    public function __construct(Connection $dbalConnection, EntityHydratorInterface $entityHydrator, TerminEntity $prototype)
     {
-        parent::__construct($dbalConnection, $dbRunner, $entityHydrator, $hydrator, $prototype);
+        parent::__construct($dbalConnection, $entityHydrator, $prototype);
     }
 
     public function findEntityById(int $entityId): TerminEntityInterface
@@ -34,20 +33,16 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
     {
         $qb = $this->dbalConnection->createQueryBuilder();
 
-        $qb
-            ->select('*')
+        $qb->select('*')
             ->from('tajo1_termin', 't4')
             ->where('t4.termin_id = ?')
             ->setParameter(0, $id);
 
         $result = $qb->fetchAssociative();
 
-        $entity = $this->hydrateEntity($result);
+        if (!$result) return null;
 
-        // $sql    = new Sql\Sql($this->dbRunner->getDb());
-        // $select = $sql->select(['t4' => 'tajo1_termin']);
-        // $select->where(['t4.termin_id' => $id]);
-        //$entity = $this->findFirst($select);
+        $entity = $this->hydrateEntity($result);
 
         return $this->mapReferences($entity);
     }
@@ -57,353 +52,437 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
         return $entity;
     }
 
-    protected function getTerminJoinCondition(array $params = []): Where
+    protected function getTerminJoinCondition(QueryBuilder $qb, array $params = []): string
     {
-        $where = new Where();
+        $conditions = [];
+        $expr = $qb->expr();
 
-        $where
-            ->equalTo('t4.datum_id', 't3.datum_id', Sql\ExpressionInterface::TYPE_IDENTIFIER, Sql\ExpressionInterface::TYPE_IDENTIFIER)
-            ->equalTo('t4.termin_ist_geloescht', 0);
+        $conditions[] = $expr->and(
+            $expr->eq('t4.datum_id', 't3.datum_id'),
+            $expr->eq('t4.termin_ist_geloescht', ':join_ist_geloescht')
+        );
+        $qb->setParameter('join_ist_geloescht', 0, \Doctrine\DBAL\ParameterType::INTEGER);
 
         // id
         if (isset($params['id']) && !empty($params['id'])) {
-            $where->equalTo('t4.termin_id', $params['id']);
+            $conditions[] = $expr->eq('t4.termin_id', 'join_id');
+            $qb->setParameter('join_id', $params['id']);
         }
 
         // suchtext
         if (!empty($params['suchtext'])) {
-            $whereLikeSearch = $this->dbRunner->whereLikeSearchWithSqlObject($params['suchtext'], [
-                ['column' => 't4.termin_mitvon', 'search' => '%[value]%'],
-                ['column' => 't4.termin_id', 'search' => '%[value]%'],
-                ['column' => 't4.termin_kategorie', 'search' => '%[value]%'],
-                ['column' => 't4.termin_betreff', 'search' => '%[value]%'],
-                ['column' => 't4.termin_text', 'search' => '%[value]%'],
-                ['column' => 't3.datum_datum', 'search' => '[value]%'],
-                ['column' => 't3.datum_wochentag_lang_de', 'search' => '[value]%'],
-                ['column' => 't3.datum_wochentag_lang_en', 'search' => '[value]%'],
-                ['column' => 't3.datum_monat_lang_de', 'search' => '[value]%'],
-                ['column' => 't3.datum_monat_lang_en', 'search' => '[value]%'],
-                ['column' => 't3.datum_monat', 'search' => '[value]'],
-                ['column' => 't3.datum_datum_1_de', 'search' => '[value]%'],
-                ['column' => 't3.datum_datum_2_de', 'search' => '[value]%'],
-                ['column' => 't3.datum_datum_3_de', 'search' => '[value]%'],
-                ['column' => 't3.datum_datum_4_de', 'search' => '[value]%'],
-                ['column' => 't3.datum_datum_5_de', 'search' => '[value]%'],
-                ['column' => 't3.datum_datum_6_de', 'search' => '[value]%'],
-                ['column' => 't3.datum_datum_7_de', 'search' => '[value]%'],
-                ['column' => 't3.datum_datum_8_de', 'search' => '[value]%'],
-            ]);
 
-            if ($whereLikeSearch) {
-                $where->addPredicates($whereLikeSearch);
+            $suchtext           = str_replace(['(', ')', '/', '\\'], ' ', $params['suchtext']);
+            $suchtextParts      = array_filter(explode(',', trim($suchtext)), 'strlen');
+
+            if (count($suchtextParts)) {
+
+                foreach ($suchtextParts as $value) {
+
+                    $whereLikeSearch = [];
+                    $suchtextSubparts = array_filter(explode(' ', trim($value)), 'strlen');
+
+                    foreach ($suchtextSubparts as $v) {
+
+                        $v = trim($v);
+
+                        if ('' !== $v) {
+
+                            $suchtextFields = [];
+
+                            foreach (
+                                [
+                                    ['column' => 't4.termin_mitvon', 'search' => '%[value]%'],
+                                    ['column' => 't4.termin_id', 'search' => '%[value]%'],
+                                    ['column' => 't4.termin_kategorie', 'search' => '%[value]%'],
+                                    ['column' => 't4.termin_betreff', 'search' => '%[value]%'],
+                                    ['column' => 't4.termin_text', 'search' => '%[value]%'],
+                                    ['column' => 't3.datum_datum', 'search' => '[value]%'],
+                                    ['column' => 't3.datum_wochentag_lang_de', 'search' => '[value]%'],
+                                    ['column' => 't3.datum_wochentag_lang_en', 'search' => '[value]%'],
+                                    ['column' => 't3.datum_monat_lang_de', 'search' => '[value]%'],
+                                    ['column' => 't3.datum_monat_lang_en', 'search' => '[value]%'],
+                                    ['column' => 't3.datum_monat', 'search' => '[value]'],
+                                    ['column' => 't3.datum_datum_1_de', 'search' => '[value]%'],
+                                    ['column' => 't3.datum_datum_2_de', 'search' => '[value]%'],
+                                    ['column' => 't3.datum_datum_3_de', 'search' => '[value]%'],
+                                    ['column' => 't3.datum_datum_4_de', 'search' => '[value]%'],
+                                    ['column' => 't3.datum_datum_5_de', 'search' => '[value]%'],
+                                    ['column' => 't3.datum_datum_6_de', 'search' => '[value]%'],
+                                    ['column' => 't3.datum_datum_7_de', 'search' => '[value]%'],
+                                    ['column' => 't3.datum_datum_8_de', 'search' => '[value]%'],
+                                ] as $column
+                            ) {
+                                $quoteValue = $this->getDbalConnection()->quote(str_replace('[value]', $v, $column['search']), \Doctrine\DBAL\ParameterType::STRING);
+                                $suchtextFields[] = $expr->like($column['column'], $quoteValue);
+                            }
+                        }
+
+                        $whereLikeSearch[] = $expr->or(...$suchtextFields);
+                    }
+
+                    $conditions[] = $expr->and(...$whereLikeSearch);
+                }
             }
         }
 
         // kategorie
         if (!empty($params['kategorie'])) {
-            $where->in('t4.termin_kategorie', $params['kategorie']);
+            $conditions[] = $expr->in('t4.termin_kategorie', ':join_kategorie');
+            $qb->setParameter('join_kategorie', $params['kategorie'], \Doctrine\DBAL\ArrayParameterType::STRING);
         }
 
         // status
         if (!empty($params['status'])) {
-            $where->in('t4.termin_status', $params['status']);
+            $conditions[] = $expr->in('t4.termin_status', ':join_status');
+            $qb->setParameter('join_status', $params['status'], \Doctrine\DBAL\ArrayParameterType::STRING);
         }
 
         // ansicht
         if (!empty($params['ansicht'])) {
-            $outerPredicateSet = $where->nest();
-            $outerPredicateSet->in('t4.termin_ansicht', $params['ansicht']);
-            $outerPredicateSet->where->unnest();
+            $conditions[] = $expr->in('t4.termin_ansicht', ':join_ansicht');
+            $qb->setParameter('join_ansicht', $params['ansicht'], \Doctrine\DBAL\ArrayParameterType::STRING);
         }
 
         // tagezuvor
         if (!empty($params['tagezuvor'])) {
-            $where
-                ->nest()
-                ->isNull('t4.termin_zeige_tagezuvor')
-                ->or
-                ->expression('DATEDIFF(`t3`.`datum_datum`, CURRENT_DATE())  <= `t4`.`termin_zeige_tagezuvor`', [])
-                ->unnest();
+            $conditions[] =
+                $expr->or(
+                    $expr->isNull('t4.termin_zeige_tagezuvor'),
+                    $expr->lt('DATEDIFF(`t3`.`datum_datum`, CURRENT_DATE())', '`t4`.`termin_zeige_tagezuvor`')
+                );
         }
 
         // drucken
         if (!empty($params['drucken'])) {
-            $where
-                ->nest()
-                ->isNull('t4.termin_aktiviere_drucken')
-                ->or
-                ->equalTo('t4.termin_aktiviere_drucken', $params['drucken'])
-                ->unnest();
+            $conditions[] = $expr->or(
+                $expr->isNull('t4.termin_aktiviere_drucken'),
+                $expr->eq('t4.termin_aktiviere_drucken', ':join_drucken')
+            );
+            $qb->setParameter('join_drucken', $params['drucken']);
         }
 
-        return $where;
+        return (string)$expr->and(...$conditions);
     }
 
-    protected function getWhereCondition(array $params = []): Where
+    protected function getWhereCondition(QueryBuilder $qb, array $params = []): ?string
     {
-        $where = new Where();
+        $conditions = [];
+        $expr = $qb->expr();
 
         // start
         if (isset($params['start']) && !empty($params['start'])) {
-            $where->expression('`t3`.`datum_datum` >= ?', $params['start']);
+            $conditions[] = $expr->gte('`t3`.`datum_datum`', ':where_start');
+            $qb->setParameter('where_start', $params['start']);
         }
 
         // ende
         if (isset($params['ende']) && !empty($params['ende'])) {
-            $where->expression('`t3`.`datum_datum` <= ?', $params['ende']);
+            $conditions[] = $expr->lte('`t3`.`datum_datum`', ':where_ende');
+            $qb->setParameter('where_ende', $params['ende']);
         }
 
         // anzeige
         if (isset($params['anzeige']) && $params['anzeige']) {
-            $where
-                ->isNotNull('t4.termin_id');
+            $conditions[] = $expr->isNotNull('t4.termin_id IS NOT NULL');
         }
 
         // tage
         if (isset($params['tage']) && !empty($params['tage'])) {
-            $where->in('t3.datum_wochentag', $params['tage']);
+            $conditions[] = $expr->in('t3.datum_wochentag', ':where_tage');
+            $qb->setParameter('where_tage', $params['tage'], \Doctrine\DBAL\ArrayParameterType::INTEGER);
         }
 
-        return $where;
+        return $conditions ? (string)$expr->and(...$conditions) : '';
     }
 
-    public function fetchTermin(array $params = [], array $groupBy = ['t3.datum_id', 't4.termin_id'], string $order = 't3.datum_datum ASC, t4.termin_zeit_start ASC, t4.termin_zeit_ende ASC, t4.termin_ansicht DESC, t4.termin_sortierung ASC'): ResultSet
-    {
+    public function fetchTermin(
+        array $params = [],
+        array $groupBy = ['t3.datum_id', 't4.termin_id'],
+        string $order = 't3.datum_datum ASC, t4.termin_zeit_start ASC, t4.termin_zeit_ende ASC, t4.termin_ansicht DESC, t4.termin_sortierung ASC'
+    ): array {
+
         $initConfig = $this->getMyInitConfig();
 
-        $sql    = new Sql\Sql($this->dbRunner->getDb());
-        $select = $sql->select(['t3' => 'tajo1_datum']);
-        $select->columns([
-            'datum_id'    => 'datum_id',
-            'datum_datum' => 'datum_datum',
-        ]);
-        $select->join(
-            ['t4' => new Sql\Expression('(SELECT `t1`.*,`t2`.`datum_id` FROM `tajo1_lnk_datum_termin` AS `t2` LEFT JOIN `tajo1_termin` AS `t1` ON `t1`.`termin_id` = `t2`.`termin_id`)')],
-            $this->getTerminJoinCondition($params),
-            [
-                'termin_id'                      => 'termin_id',
-                'termin_status'                  => 'termin_status',
-                'termin_datum_start'             => 'termin_datum_start',
-                'termin_datum_ende'              => 'termin_datum_ende',
-                'termin_zeit_start'              => new Sql\Expression('IF(termin_datum_start = datum_datum, termin_zeit_start, null)'),
-                'termin_zeit_ende'               => new Sql\Expression('IF(termin_datum_ende = datum_datum, termin_zeit_ende, null)'),
-                'termin_zeit_ganztags'           => 'termin_zeit_ganztags',
-                'termin_betreff'                 => 'termin_betreff',
-                'termin_text'                    => 'termin_text',
-                'termin_kategorie'               => 'termin_kategorie',
-                'termin_mitvon'                  => 'termin_mitvon',
-                'termin_image'                   => 'termin_image',
-                'termin_link'                    => 'termin_link',
-                'termin_link_titel'              => 'termin_link_titel',
-                'termin_link2'                    => 'termin_link2',
-                'termin_link2_titel'              => 'termin_link2_titel',
-                'termin_zeige_konflikt'          => 'termin_zeige_konflikt',
-                'termin_zeige_einmalig'          => 'termin_zeige_einmalig',
-                'termin_zeige_tagezuvor'         => 'termin_zeige_tagezuvor',
-                'termin_aktiviere_drucken'       => 'termin_aktiviere_drucken',
-                'termin_ansicht'                 => 'termin_ansicht',
-                'termin_ist_konfliktrelevant'    => 'termin_ist_konfliktrelevant',
-                'termin_notiz'                   => 'termin_notiz',
-                'termin_erstellt_am'             => 'termin_erstellt_am',
-                'termin_aktualisiert_am'         => 'termin_aktualisiert_am',
-                'termin_aktualisiert_am_trigger' => 'termin_aktualisiert_am_trigger',
-                '_is_new'                       => new Sql\Expression('IF(? > DATEDIFF(CURDATE(), termin_erstellt_am), 1, 0)', $initConfig['considered_as_new']),
-                '_is_updated'                   => new Sql\Expression('IF(? > DATEDIFF(CURDATE(), termin_aktualisiert_am_trigger), 1, 0)', $initConfig['considered_as_updated']),
-                '_anzahl_tage'                   => new Sql\Expression('DATEDIFF(termin_datum_ende, termin_datum_start) + 1'),
-                '_tag_start_uts'                 => new Sql\Expression('UNIX_TIMESTAMP(DATE_FORMAT(termin_datum_start, "%Y-%m-%d 00:00:00"))'),
-                '_tag_ende_uts'                  => new Sql\Expression('UNIX_TIMESTAMP(DATE_FORMAT(termin_datum_ende, "%Y-%m-%d 00:00:00"))'),
-                '_konflikt'                      => new Sql\Expression(
-                    "(
-                        SELECT
-                                GROUP_CONCAT(DISTINCT `c1`.`termin_status`, '---', `c1`.`termin_betreff`, '---', `c1`.`termin_mitvon`, '---', `c1`.`termin_id`, '---', `c1`.`termin_datum_start`, '---', `c1`.`termin_datum_ende` ORDER BY `c1`.`termin_betreff` SEPARATOR '+++')
-                        FROM
-                                `tajo1_termin` AS `c1`
-                        WHERE
-                                `c1`.`termin_ist_konfliktrelevant` = 1 AND
-                                `c1`.`termin_ist_geloescht` = 0 AND
-                                `c1`.`termin_id` <> `t4`.`termin_id` AND 
-                                (
-                                        (TIMESTAMP(`t4`.`termin_datum_start`, `t4`.`termin_zeit_start`) BETWEEN TIMESTAMP(`c1`.`termin_datum_start`,`c1`.`termin_zeit_start`) AND TIMESTAMP(`c1`.`termin_datum_ende`,`c1`.`termin_zeit_ende`)) 
-                                        OR
-                                        (TIMESTAMP(`t4`.`termin_datum_ende`, `t4`.`termin_zeit_ende`) BETWEEN TIMESTAMP(`c1`.`termin_datum_start`,`c1`.`termin_zeit_start`) AND TIMESTAMP(`c1`.`termin_datum_ende`,`c1`.`termin_zeit_ende`))
-                                        OR
-                                        (TIMESTAMP(`c1`.`termin_datum_start`, `c1`.`termin_zeit_start`) BETWEEN TIMESTAMP(`t4`.`termin_datum_start`,`t4`.`termin_zeit_start`) AND TIMESTAMP(`t4`.`termin_datum_ende`,`t4`.`termin_zeit_ende`)) 
-                                        OR
-                                        (TIMESTAMP(`c1`.`termin_datum_ende`, `c1`.`termin_zeit_ende`) BETWEEN TIMESTAMP(`t4`.`termin_datum_start`,`t4`.`termin_zeit_start`) AND TIMESTAMP(`t4`.`termin_datum_ende`,`t4`.`termin_zeit_ende`))
-                                )
-                    )"
-                ),
-                '_fehlbuchung'                   => new Sql\Expression(
-                    "(
-                        SELECT
-                                GROUP_CONCAT(DISTINCT `c1`.`termin_status`, '---', `c1`.`termin_betreff`, '---', `c1`.`termin_mitvon`, '---', `c1`.`termin_id`, '---', `c1`.`termin_datum_start`, '---', `c1`.`termin_datum_ende` ORDER BY `c1`.`termin_betreff` SEPARATOR '+++')
-                        FROM
-                                `tajo1_termin` AS `c1`
-                        WHERE
-                                `c1`.`termin_ist_konfliktrelevant` = 1 AND
-                                `c1`.`termin_ist_geloescht` = 0 AND
-                                `c1`.`termin_id` <> `t4`.`termin_id` AND 
-                                (
-                                        (TIMESTAMP(`t4`.`termin_datum_start`, `t4`.`termin_zeit_start`) BETWEEN TIMESTAMP(`c1`.`termin_datum_start`,`c1`.`termin_zeit_start`) AND TIMESTAMP(`c1`.`termin_datum_ende`,`c1`.`termin_zeit_ende`)) 
-                                        OR
-                                        (TIMESTAMP(`t4`.`termin_datum_ende`, `t4`.`termin_zeit_ende`) BETWEEN TIMESTAMP(`c1`.`termin_datum_start`,`c1`.`termin_zeit_start`) AND TIMESTAMP(`c1`.`termin_datum_ende`,`c1`.`termin_zeit_ende`))
-                                        OR
-                                        (TIMESTAMP(`c1`.`termin_datum_start`, `c1`.`termin_zeit_start`) BETWEEN TIMESTAMP(`t4`.`termin_datum_start`,`t4`.`termin_zeit_start`) AND TIMESTAMP(`t4`.`termin_datum_ende`,`t4`.`termin_zeit_ende`)) 
-                                        OR
-                                        (TIMESTAMP(`c1`.`termin_datum_ende`, `c1`.`termin_zeit_ende`) BETWEEN TIMESTAMP(`t4`.`termin_datum_start`,`t4`.`termin_zeit_start`) AND TIMESTAMP(`t4`.`termin_datum_ende`,`t4`.`termin_zeit_ende`))
-                                ) AND 
-                                (
-                                    `c1`.`termin_status` = " . $this->dbRunner->getDb()->getPlatform()->quoteValue(TerminStatusEnum::WARNUNG->value) . " AND
-                                    (
-                                        `c1`.`termin_mitvon` IS NULL 
-                                        OR `c1`.`termin_mitvon` = '' 
-                                        OR `t4`.`termin_mitvon` LIKE CONCAT('%',`c1`.`termin_mitvon`,'%')
-                                    )
-                                )
-                    )"
-                ),
-            ],
-            Sql\Select::JOIN_LEFT
-        );
+        $cte1 = $this->dbalConnection->createQueryBuilder();
+        $cte2 = $this->dbalConnection->createQueryBuilder();
+        $cte3 = $this->dbalConnection->createQueryBuilder();
 
-        $select->group($groupBy);
-        $select->order($order);
-        $select->where($this->getWhereCondition($params));
+        $cte1
+            ->select(
+                't1.*',
+                '`t2`.`datum_id`'
+            )
+            ->from('tajo1_lnk_datum_termin', 't2')
+            ->leftJoin(
+                't2',
+                'tajo1_termin',
+                't1',
+                '`t1`.`termin_id` = `t2`.`termin_id`'
+            );
+
+        $cte2->select(
+            'c1.termin_id',
+            "GROUP_CONCAT(DISTINCT `c1`.`termin_status`, '---', `c1`.`termin_betreff`, '---', `c1`.`termin_mitvon`, '---', `c1`.`termin_id`, '---', `c1`.`termin_datum_start`, '---', `c1`.`termin_datum_ende` ORDER BY `c1`.`termin_betreff` SEPARATOR '+++') AS _konflikt"
+        )
+            ->from('tajo1_termin', 'c1')
+            ->leftJoin(
+                'c1',
+                'cte1',
+                't4',
+                '
+                `c1`.`termin_ist_konfliktrelevant` = 1 AND
+                `c1`.`termin_ist_geloescht` = 0 AND
+                `c1`.`termin_id` <> `t4`.`termin_id` AND 
+                (
+                        (TIMESTAMP(`t4`.`termin_datum_start`, `t4`.`termin_zeit_start`) BETWEEN TIMESTAMP(`c1`.`termin_datum_start`,`c1`.`termin_zeit_start`) AND TIMESTAMP(`c1`.`termin_datum_ende`,`c1`.`termin_zeit_ende`)) 
+                        OR
+                        (TIMESTAMP(`t4`.`termin_datum_ende`, `t4`.`termin_zeit_ende`) BETWEEN TIMESTAMP(`c1`.`termin_datum_start`,`c1`.`termin_zeit_start`) AND TIMESTAMP(`c1`.`termin_datum_ende`,`c1`.`termin_zeit_ende`))
+                        OR
+                        (TIMESTAMP(`c1`.`termin_datum_start`, `c1`.`termin_zeit_start`) BETWEEN TIMESTAMP(`t4`.`termin_datum_start`,`t4`.`termin_zeit_start`) AND TIMESTAMP(`t4`.`termin_datum_ende`,`t4`.`termin_zeit_ende`)) 
+                        OR
+                        (TIMESTAMP(`c1`.`termin_datum_ende`, `c1`.`termin_zeit_ende`) BETWEEN TIMESTAMP(`t4`.`termin_datum_start`,`t4`.`termin_zeit_start`) AND TIMESTAMP(`t4`.`termin_datum_ende`,`t4`.`termin_zeit_ende`))
+                )'
+            );
+
+        $cte3->select(
+            'c1.termin_id',
+            "GROUP_CONCAT(DISTINCT `c1`.`termin_status`, '---', `c1`.`termin_betreff`, '---', `c1`.`termin_mitvon`, '---', `c1`.`termin_id`, '---', `c1`.`termin_datum_start`, '---', `c1`.`termin_datum_ende` ORDER BY `c1`.`termin_betreff` SEPARATOR '+++') AS _fehlbuchung"
+        )
+            ->from('tajo1_termin', 'c1')
+            ->leftJoin(
+                'c1',
+                'cte1',
+                't4',
+                "
+                `c1`.`termin_ist_konfliktrelevant` = 1 AND
+                `c1`.`termin_ist_geloescht` = 0 AND
+                `c1`.`termin_id` <> `t4`.`termin_id` AND 
+                (
+                        (TIMESTAMP(`t4`.`termin_datum_start`, `t4`.`termin_zeit_start`) BETWEEN TIMESTAMP(`c1`.`termin_datum_start`,`c1`.`termin_zeit_start`) AND TIMESTAMP(`c1`.`termin_datum_ende`,`c1`.`termin_zeit_ende`)) 
+                        OR
+                        (TIMESTAMP(`t4`.`termin_datum_ende`, `t4`.`termin_zeit_ende`) BETWEEN TIMESTAMP(`c1`.`termin_datum_start`,`c1`.`termin_zeit_start`) AND TIMESTAMP(`c1`.`termin_datum_ende`,`c1`.`termin_zeit_ende`))
+                        OR
+                        (TIMESTAMP(`c1`.`termin_datum_start`, `c1`.`termin_zeit_start`) BETWEEN TIMESTAMP(`t4`.`termin_datum_start`,`t4`.`termin_zeit_start`) AND TIMESTAMP(`t4`.`termin_datum_ende`,`t4`.`termin_zeit_ende`)) 
+                        OR
+                        (TIMESTAMP(`c1`.`termin_datum_ende`, `c1`.`termin_zeit_ende`) BETWEEN TIMESTAMP(`t4`.`termin_datum_start`,`t4`.`termin_zeit_start`) AND TIMESTAMP(`t4`.`termin_datum_ende`,`t4`.`termin_zeit_ende`))
+                ) AND 
+                (
+                    `c1`.`termin_status` = :p3 AND
+                    (
+                        `c1`.`termin_mitvon` IS NULL 
+                        OR `c1`.`termin_mitvon` = '' 
+                        OR `t4`.`termin_mitvon` LIKE CONCAT('%',`c1`.`termin_mitvon`,'%')
+                    )
+                )"
+            );
+
+        $qb = $this->dbalConnection->createQueryBuilder();
+        $qb->with('cte1', $cte1);
+        $qb->with('cte2', $cte2);
+        $qb->with('cte3', $cte3);
+        $qb->select(
+            't3.datum_id',
+            't3.datum_datum',
+            't4.termin_id',
+            't4.termin_status',
+            't4.termin_datum_start',
+            't4.termin_datum_ende',
+            't4.termin_zeit_ganztags',
+            't4.termin_betreff',
+            't4.termin_text',
+            't4.termin_kategorie',
+            't4.termin_mitvon',
+            't4.termin_image',
+            't4.termin_link',
+            't4.termin_link_titel',
+            't4.termin_link2',
+            't4.termin_link2_titel',
+            't4.termin_zeige_konflikt',
+            't4.termin_zeige_einmalig',
+            't4.termin_zeige_tagezuvor',
+            't4.termin_aktiviere_drucken',
+            't4.termin_ansicht',
+            't4.termin_ist_konfliktrelevant',
+            't4.termin_notiz',
+            't4.termin_erstellt_am',
+            't4.termin_aktualisiert_am',
+            't4.termin_aktualisiert_am_trigger',
+            'k._konflikt',
+            'f._fehlbuchung'
+        )
+            ->addSelect('IF(t4.termin_datum_start = t3.datum_datum, t4.termin_zeit_start, null) AS termin_zeit_start')
+            ->addSelect('IF(t4.termin_datum_ende = t3.datum_datum, t4.termin_zeit_ende, null) AS termin_zeit_ende')
+            ->addSelect('(DATEDIFF(termin_datum_ende, termin_datum_start) + 1) AS _anzahl_tage')
+            ->addSelect('UNIX_TIMESTAMP(DATE_FORMAT(termin_datum_start, "%Y-%m-%d 00:00:00")) AS _tag_start_uts')
+            ->addSelect('UNIX_TIMESTAMP(DATE_FORMAT(termin_datum_ende, "%Y-%m-%d 00:00:00")) AS _tag_ende_uts')
+            ->addSelect('IF(:p1 > DATEDIFF(CURDATE(), termin_erstellt_am), 1, 0) AS _is_new')
+            ->addSelect('IF(:p2 > DATEDIFF(CURDATE(), termin_aktualisiert_am_trigger), 1, 0) AS _is_updated')
+            ->from('tajo1_datum', 't3')
+            ->leftJoin('t3', 'cte1', 't4', (string)$this->getTerminJoinCondition($qb, $params))
+            ->leftJoin('t4', 'cte2', 'k', 't4.termin_id = k.termin_id')
+            ->leftJoin('t4', 'cte3', 'f', 't4.termin_id = f.termin_id')
+            ->where((string)$this->getWhereCondition($qb, $params))
+            ->groupBy(implode(",", $groupBy))
+            ->orderBy($order)
+            ->setParameter('p1', $initConfig['considered_as_new'])
+            ->setParameter('p2', $initConfig['considered_as_updated'])
+            ->setParameter('p3', TerminStatusEnum::WARNUNG->value);
 
         // limit
         if (!empty($params['limit'])) {
-            $select->limit($params['limit']);
+            $qb->setFirstResult(0)
+                ->setMaxResults($params['limit']);
         }
 
-        // ddd($select->getSqlString($this->dbRunner->getDb()->platform));
-
-        return $this->fetch($select);
+        return $qb->fetchAllAssociative();
     }
 
-    public function fetchMitvon(array $params = [], string $order = 'termin_mitvon ASC'): ResultSet
+    public function fetchMitvon(array $params = [], string $order = 't4.termin_mitvon ASC'): array
     {
-        $sql    = new Sql\Sql($this->dbRunner->getDb());
-        $select = $sql->select(['t3' => 'tajo1_datum']);
-        $select->columns([]);
-        $select->join(
-            ['t4' => new Sql\Expression('(SELECT `t1`.*,`t2`.`datum_id` FROM `tajo1_lnk_datum_termin` AS `t2` LEFT JOIN `tajo1_termin` AS `t1` ON `t1`.`termin_id` = `t2`.`termin_id`)')],
-            $this->getTerminJoinCondition($params),
-            [
-                'termin_mitvon' => 'termin_mitvon',
-            ],
-            Sql\Select::JOIN_LEFT
-        );
-        $select->group('t4.termin_mitvon');
-        $select->order($order);
-        $select->where($this->getWhereCondition($params));
-        $select->where
-            ->isNotNull('t4.termin_mitvon')
-            ->notEqualTo('t4.termin_mitvon', '');
+        $qb = $this->dbalConnection->createQueryBuilder();
+        $qb->select('t4.termin_mitvon')
+            ->from('tajo1_datum', 't3')
+            ->leftJoin(
+                't3',
+                '(SELECT `t1`.*,`t2`.`datum_id` FROM `tajo1_lnk_datum_termin` AS `t2` LEFT JOIN `tajo1_termin` AS `t1` ON `t1`.`termin_id` = `t2`.`termin_id`)',
+                't4',
+                $this->getTerminJoinCondition($qb, $params)
+            )
+            ->andWhere(
+                $qb->expr()->isNotNull('t4.termin_mitvon'),
+                $qb->expr()->neq('t4.termin_mitvon', "''")
+            )
+            ->groupBy('t4.termin_mitvon')
+            ->orderBy($order);
 
-        //ddd($select->getSqlString($this->dbRunner->getDb()->platform));
+        // where
+        $where = $this->getWhereCondition($qb, $params);
 
-        return $this->fetch($select);
+        if (!empty($where))
+            $qb->andWhere($where);
+
+        // return
+        return $qb->fetchAllAssociative();
     }
 
-    public function fetchKategorie(array $params = [], string $order = 'termin_kategorie ASC'): ResultSet
+    public function fetchKategorie(array $params = [], string $order = 'termin_kategorie ASC'): array
     {
-        $sql    = new Sql\Sql($this->dbRunner->getDb());
-        $select = $sql->select(['t3' => 'tajo1_datum']);
-        $select->columns([]);
-        $select->join(
-            ['t4' => new Sql\Expression('(SELECT `t1`.*,`t2`.`datum_id` FROM `tajo1_lnk_datum_termin` AS `t2` LEFT JOIN `tajo1_termin` AS `t1` ON `t1`.`termin_id` = `t2`.`termin_id`)')],
-            $this->getTerminJoinCondition($params),
-            [
-                'termin_kategorie' => 'termin_kategorie',
-            ],
-            Sql\Select::JOIN_LEFT
-        );
-        $select->group('t4.termin_kategorie');
-        $select->order($order);
-        $select->where($this->getWhereCondition($params));
-        $select->where
-            ->isNotNull('t4.termin_kategorie')
-            ->notEqualTo('t4.termin_kategorie', '');
+        $qb = $this->dbalConnection->createQueryBuilder();
+        $qb->select('t4.termin_kategorie')
+            ->from('tajo1_datum', 't3')
+            ->leftJoin(
+                't3',
+                '(SELECT `t1`.*,`t2`.`datum_id` FROM `tajo1_lnk_datum_termin` AS `t2` LEFT JOIN `tajo1_termin` AS `t1` ON `t1`.`termin_id` = `t2`.`termin_id`)',
+                't4',
+                $this->getTerminJoinCondition($qb, $params)
+            )
+            ->andWhere(
+                $qb->expr()->isNotNull('t4.termin_kategorie'),
+                $qb->expr()->neq('t4.termin_kategorie', "''")
+            )
+            ->groupBy('t4.termin_kategorie')
+            ->orderBy($order);
 
-        return $this->fetch($select);
+        // where
+        $where = $this->getWhereCondition($qb, $params);
+
+        if (!empty($where))
+            $qb->andWhere($where);
+
+        // return
+        return $qb->fetchAllAssociative();
     }
 
-    public function fetchBetreff(array $params = [], string $order = 'termin_betreff ASC'): ResultSet
+    public function fetchBetreff(array $params = [], string $order = 'termin_betreff ASC'): array
     {
-        $sql    = new Sql\Sql($this->dbRunner->getDb());
-        $select = $sql->select(['t3' => 'tajo1_datum']);
-        $select->columns([]);
-        $select->join(
-            ['t4' => new Sql\Expression('(SELECT `t1`.*,`t2`.`datum_id` FROM `tajo1_lnk_datum_termin` AS `t2` LEFT JOIN `tajo1_termin` AS `t1` ON `t1`.`termin_id` = `t2`.`termin_id`)')],
-            $this->getTerminJoinCondition($params),
-            [
-                'termin_betreff' => 'termin_betreff',
-            ],
-            Sql\Select::JOIN_LEFT
-        );
-        $select->group('t4.termin_betreff');
-        $select->order($order);
-        $select->where($this->getWhereCondition($params));
-        $select->where
-            ->isNotNull('t4.termin_betreff')
-            ->notEqualTo('t4.termin_betreff', '');
+        $qb = $this->dbalConnection->createQueryBuilder();
+        $qb->select('t4.termin_betreff')
+            ->from('tajo1_datum', 't3')
+            ->leftJoin(
+                't3',
+                '(SELECT `t1`.*,`t2`.`datum_id` FROM `tajo1_lnk_datum_termin` AS `t2` LEFT JOIN `tajo1_termin` AS `t1` ON `t1`.`termin_id` = `t2`.`termin_id`)',
+                't4',
+                $this->getTerminJoinCondition($qb, $params)
+            )
+            ->andWhere(
+                $qb->expr()->isNotNull('t4.termin_betreff'),
+                $qb->expr()->neq('t4.termin_betreff', "''")
+            )
+            ->groupBy('t4.termin_betreff')
+            ->orderBy($order);
 
-        return $this->fetch($select);
+        // where
+        $where = $this->getWhereCondition($qb, $params);
+
+        if (!empty($where))
+            $qb->andWhere($where);
+
+        // return
+        return $qb->fetchAllAssociative();
     }
 
-    public function fetchLink(array $params = [], string $order = 'termin_link ASC'): ResultSet
+    public function fetchLink(array $params = [], string $order = 'termin_link ASC'): array
     {
-        $sql    = new Sql\Sql($this->dbRunner->getDb());
-        $select = $sql->select(['t3' => 'tajo1_datum']);
-        $select->columns([]);
-        $select->join(
-            ['t4' => new Sql\Expression('(SELECT `t1`.*,`t2`.`datum_id` FROM `tajo1_lnk_datum_termin` AS `t2` LEFT JOIN `tajo1_termin` AS `t1` ON `t1`.`termin_id` = `t2`.`termin_id`)')],
-            $this->getTerminJoinCondition($params),
-            [
-                'termin_link' => 'termin_link',
-            ],
-            Sql\Select::JOIN_LEFT
-        );
-        $select->group('t4.termin_link');
-        $select->order($order);
-        $select->where($this->getWhereCondition($params));
-        $select->where
-            ->isNotNull('t4.termin_link')
-            ->notEqualTo('t4.termin_link', '');
+        $qb = $this->dbalConnection->createQueryBuilder();
+        $qb->select('t4.termin_link')
+            ->from('tajo1_datum', 't3')
+            ->leftJoin(
+                't3',
+                '(SELECT `t1`.*,`t2`.`datum_id` FROM `tajo1_lnk_datum_termin` AS `t2` LEFT JOIN `tajo1_termin` AS `t1` ON `t1`.`termin_id` = `t2`.`termin_id`)',
+                't4',
+                $this->getTerminJoinCondition($qb, $params)
+            )
+            ->andWhere(
+                $qb->expr()->isNotNull('t4.termin_link'),
+                $qb->expr()->neq('t4.termin_link', "''")
+            )
+            ->groupBy('t4.termin_link')
+            ->orderBy($order);
 
-        return $this->fetch($select);
+        // where
+        $where = $this->getWhereCondition($qb, $params);
+
+        if (!empty($where))
+            $qb->andWhere($where);
+
+        // return
+        return $qb->fetchAllAssociative();
     }
 
-    public function fetchLinkTitel(array $params = [], string $order = 'termin_link_titel ASC'): ResultSet
+    public function fetchLinkTitel(array $params = [], string $order = 'termin_link_titel ASC'): array
     {
-        $sql    = new Sql\Sql($this->dbRunner->getDb());
-        $select = $sql->select(['t3' => 'tajo1_datum']);
-        $select->columns([]);
-        $select->join(
-            ['t4' => new Sql\Expression('(SELECT `t1`.*,`t2`.`datum_id` FROM `tajo1_lnk_datum_termin` AS `t2` LEFT JOIN `tajo1_termin` AS `t1` ON `t1`.`termin_id` = `t2`.`termin_id`)')],
-            $this->getTerminJoinCondition($params),
-            [
-                'termin_link_titel' => 'termin_link_titel',
-            ],
-            Sql\Select::JOIN_LEFT
-        );
-        $select->group('t4.termin_link_titel');
-        $select->order($order);
-        $select->where($this->getWhereCondition($params));
-        $select->where
-            ->isNotNull('t4.termin_link_titel')
-            ->notEqualTo('t4.termin_link_titel', '');
+        $qb = $this->dbalConnection->createQueryBuilder();
+        $qb->select('t4.termin_link_titel')
+            ->from('tajo1_datum', 't3')
+            ->leftJoin(
+                't3',
+                '(SELECT `t1`.*,`t2`.`datum_id` FROM `tajo1_lnk_datum_termin` AS `t2` LEFT JOIN `tajo1_termin` AS `t1` ON `t1`.`termin_id` = `t2`.`termin_id`)',
+                't4',
+                $this->getTerminJoinCondition($qb, $params)
+            )
+            ->andWhere(
+                $qb->expr()->isNotNull('t4.termin_link_titel'),
+                $qb->expr()->neq('t4.termin_link_titel', "''")
+            )
+            ->groupBy('t4.termin_link_titel')
+            ->orderBy($order);
 
-        return $this->fetch($select);
+        // where
+        $where = $this->getWhereCondition($qb, $params);
+
+        if (!empty($where))
+            $qb->andWhere($where);
+
+        // return
+        return $qb->fetchAllAssociative();
     }
 
-    public function fetchImage(array $params = [], string $order = 'termin_image ASC'): ResultSet
+    public function fetchImage(array $params = [], string $order = 'termin_image ASC'): array
     {
-        $sql    = new Sql\Sql($this->dbRunner->getDb());
-        $select = $sql->select(['t3' => 'tajo1_datum']);
-        $select->columns([
-            new Sql\Expression('
-            CONCAT(
+        $qb = $this->dbalConnection->createQueryBuilder();
+        $qb->select(
+            'CONCAT(
                 `t4`.`termin_image`, 
                 IF(`t5`.`media_anzeige` IS NOT NULL AND `t5`.`media_anzeige` <> "", 
                     CONCAT(" -> ", `t5`.`media_anzeige`), 
@@ -412,35 +491,38 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
                          ""
                     )
                 )
-            )'),
-        ]);
-        $select->join(
-            ['t4' => new Sql\Expression('(SELECT `t1`.*,`t2`.`datum_id` FROM `tajo1_lnk_datum_termin` AS `t2` LEFT JOIN `tajo1_termin` AS `t1` ON `t1`.`termin_id` = `t2`.`termin_id`)')],
-            $this->getTerminJoinCondition($params),
-            [
-                'termin_image' => 'termin_image',
-            ],
-            Sql\Select::JOIN_LEFT
-        );
-        $select->join(
-            ['t5' => 'tajo1_media'],
-            new Sql\Predicate\Expression('CONCAT("/media/", `t5`.`media_id`) = `t4`.`termin_image`'),
-            [
-                'media_name'    => 'media_name',
-                'media_anzeige' => 'media_anzeige',
-            ],
-            Sql\Select::JOIN_LEFT
-        );
-        $select->group('t4.termin_image');
-        $select->order($order);
-        $select->where($this->getWhereCondition($params));
-        $select->where
-            ->isNotNull('t4.termin_image')
-            ->notEqualTo('t4.termin_image', '');
+            )',
+            't4.termin_image',
+            't5.media_name',
+            't5.media_anzeige'
+        )
+            ->from('tajo1_datum', 't3')
+            ->leftJoin(
+                't3',
+                '(SELECT `t1`.*,`t2`.`datum_id` FROM `tajo1_lnk_datum_termin` AS `t2` LEFT JOIN `tajo1_termin` AS `t1` ON `t1`.`termin_id` = `t2`.`termin_id`)',
+                't4',
+                $this->getTerminJoinCondition($qb, $params)
+            )
+            ->leftJoin(
+                't4',
+                'tajo1_media',
+                't5',
+                'CONCAT("/media/", `t5`.`media_id`) = `t4`.`termin_image`'
+            )
+            ->andWhere(
+                $qb->expr()->isNotNull('t4.termin_image'),
+                $qb->expr()->neq('t4.termin_image', "''")
+            )
+            ->groupBy('t4.termin_image')
+            ->orderBy($order);
 
-        //        echo $select->getSqlString($this->dbRunner->getDb()->platform);
-        //        ddd("STOP");
+        // where
+        $where = $this->getWhereCondition($qb, $params);
 
-        return $this->fetch($select);
+        if (!empty($where))
+            $qb->andWhere($where);
+
+        // return
+        return $qb->fetchAllAssociative();
     }
 }

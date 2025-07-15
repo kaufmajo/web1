@@ -5,83 +5,36 @@ declare(strict_types=1);
 namespace App\Model\Termin;
 
 use App\Model\AbstractCommand;
-use App\Model\DbRunnerInterface;
-use App\Model\Entity\EntityInterface;
+use App\Model\Entity\EntityHydratorInterface;
 use App\Service\HelperService;
 use App\Traits\Aware\TerminRepositoryAwareTrait;
 use DateTime;
-use Exception;
-use Laminas\Db\Sql;
-use Laminas\Hydrator\HydratorInterface;
-use RuntimeException;
+use Doctrine\DBAL\Connection;
 
 class TerminCommand extends AbstractCommand implements TerminCommandInterface
 {
     use TerminRepositoryAwareTrait;
 
-    public function __construct(DbRunnerInterface $dbRunner, HydratorInterface $hydrator)
+    public function __construct(Connection $dbalConnection, EntityHydratorInterface $entityHydrator)
     {
-        parent::__construct($dbRunner, $hydrator);
-    }
-
-    public function getEntityData(EntityInterface $entity): array
-    {
-        return $this->hydrator->extract($entity);
+        parent::__construct($dbalConnection, $entityHydrator);
     }
 
     public function insertTermin(TerminEntityInterface $terminEntity): int
     {
-        // process
-        $insert = new Sql\Insert('tajo1_termin');
-        $insert->values($this->getEntityData($terminEntity));
-
-        $affectedRows = $this->insert($insert, $generatedValue);
-
-        // set entity id
-        $terminEntity->setEntityId($generatedValue);
-
-        $terminEntity->setLastEntityAction('insert');
-
-        return $affectedRows;
+        return $this->insert('tajo1_termin', $terminEntity);
     }
 
     public function updateTermin(TerminEntityInterface $terminEntity): int
     {
-        if (!$terminEntity->getTerminId()) {
-            throw new RuntimeException('Cannot update entity; missing identifier');
-        }
-
-        // process
-        $update = new Sql\Update('tajo1_termin');
-        $update->where(['termin_id = ?' => $terminEntity->getTerminId()]);
-        $update->set($this->getEntityData($terminEntity));
-
-        $affectedRows = $this->update($update);
-
-        $terminEntity->setLastEntityAction('update');
-
-        return $affectedRows;
+        return $this->update('tajo1_termin', $terminEntity, 'termin_id');
     }
 
     public function deleteTermin(TerminEntityInterface $terminEntity): int
     {
-        if (!$terminEntity->getTerminId()) {
-            throw new RuntimeException('Cannot delete entity; missing identifier');
-        }
-
-        $terminEntity->setTerminIstGeloescht(1);
-
-        // process
-        $update = new Sql\Update('tajo1_termin');
-        $update->where(['termin_id = ?' => $terminEntity->getTerminId()]);
-        $update->set($this->getEntityData($terminEntity));
-
-        return $this->update($update);
+        return $this->delete('tajo1_termin', $terminEntity, 'termin_id');
     }
 
-    /**
-     * @throws Exception
-     */
     public function saveTermin(TerminEntityInterface $terminEntity): void
     {
         if (null === $terminEntity->getTerminId()) {
@@ -97,9 +50,6 @@ class TerminCommand extends AbstractCommand implements TerminCommandInterface
         }
     }
 
-    /**
-     * @throws Exception
-     */
     public function insertSerie(TerminEntityInterface $terminEntity): void
     {
         $datePeriod        = HelperService::getSeriePeriod(
@@ -107,7 +57,7 @@ class TerminCommand extends AbstractCommand implements TerminCommandInterface
             $terminEntity->getTerminSerieEnde(),
             $terminEntity->getTerminSerieWiederholung()
         );
-        
+
         $terminEntityClone = clone $terminEntity;
 
         $i = 0;

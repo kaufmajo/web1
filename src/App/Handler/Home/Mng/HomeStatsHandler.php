@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Handler\Home\Mng;
 
 use App\Handler\AbstractBaseHandler;
-use App\Traits\Aware\DbRunnerAwareTrait;
+use App\Traits\Aware\DbalAwareTrait;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\Diactoros\Response\TextResponse;
 use Laminas\Validator;
@@ -14,7 +14,7 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class HomeStatsHandler extends AbstractBaseHandler
 {
-    use DbRunnerAwareTrait;
+    use DbalAwareTrait;
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
@@ -27,9 +27,18 @@ class HomeStatsHandler extends AbstractBaseHandler
         }
 
         // init
+        $dbalConnection = $this->getDbalConnection();
+
         $stats = []; // will contain: [$url => ['url', 'anzahl', ['ip']]]"
 
-        $data = $this->getDbRunner()->executeSelect("SELECT * FROM `tajo1_history` ORDER BY `tajo1_history`.`history_id` DESC");
+        // 
+        $qb = $dbalConnection->createQueryBuilder();
+
+        $qb->select('*')
+            ->from('tajo1_history')
+            ->orderBy('`tajo1_history`.`history_id` DESC');
+
+        $data = $qb->fetchAllAssociative();
 
         // determine stats
         foreach ($data as $d) {

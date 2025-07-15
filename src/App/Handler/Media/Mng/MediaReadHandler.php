@@ -28,7 +28,7 @@ class MediaReadHandler extends AbstractBaseHandler
         $mediaRepository = $this->getMediaRepository();
 
         // datalist data
-        $tagData = $mediaRepository->fetchTag()->toArray();
+        $tagData = $mediaRepository->fetchTag();
 
         // form
         $mngMediaSearchForm = $this->getMediaSearchForm($request->getQueryParams());
@@ -55,7 +55,7 @@ class MediaReadHandler extends AbstractBaseHandler
         $mediaResultSet = $mediaRepository->fetchMedia($searchValues);
 
         // set view data
-        $viewData['mediaArray'] = $mediaResultSet->toArray();
+        $viewData['mediaArray'] = $mediaResultSet;
 
         return new HtmlResponse($this->templateRenderer->render('app::media/mng/read', $viewData));
     }

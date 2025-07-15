@@ -30,9 +30,9 @@ class TerminSearchHandler extends AbstractTerminHandler
         $terminCollection = new TerminCollection();
 
         // datalist data
-        $mitvonData    = $terminRepository->fetchMitvon($this->getMappedDatalistSearchValues())->toArray();
-        $kategorieData = $terminRepository->fetchKategorie($this->getMappedDatalistSearchValues())->toArray();
-        $betreffData   = $terminRepository->fetchBetreff($this->getMappedDatalistSearchValues())->toArray();
+        $mitvonData    = $terminRepository->fetchMitvon($this->getMappedDatalistSearchValues());
+        $kategorieData = $terminRepository->fetchKategorie($this->getMappedDatalistSearchValues());
+        $betreffData   = $terminRepository->fetchBetreff($this->getMappedDatalistSearchValues());
 
         // form
         $defTerminSearchForm = $this->getTerminSearchForm([]);
@@ -59,7 +59,7 @@ class TerminSearchHandler extends AbstractTerminHandler
         $terminResultSet = $terminRepository->fetchTermin($searchValues, ['t4.termin_id']);
 
         // init collection
-        $terminCollection->init($terminResultSet->toArray());
+        $terminCollection->init($terminResultSet);
 
         return new HtmlResponse(
             $this->templateRenderer->render('app::termin/mng/search', $viewData)

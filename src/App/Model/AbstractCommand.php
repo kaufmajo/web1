@@ -4,44 +4,90 @@ declare(strict_types=1);
 
 namespace App\Model;
 
-use Laminas\Db\Sql\Delete;
-use Laminas\Db\Sql\Insert;
-use Laminas\Db\Sql\Update;
-use Laminas\Hydrator\HydratorInterface;
+use App\Model\Entity\EntityHydratorInterface;
+use App\Model\Entity\EntityInterface;
+use Doctrine\DBAL\Connection;
+use RuntimeException;
 
 abstract class AbstractCommand implements CommandInterface
 {
-    protected DbRunnerInterface $dbRunner;
+    protected Connection $dbalConnection;
 
-    protected HydratorInterface $hydrator;
+    protected EntityHydratorInterface $entityHydrator;
 
-    public function __construct(DbRunnerInterface $dbRunner, HydratorInterface $hydrator)
+    public function __construct(Connection $dbalConnection, EntityHydratorInterface $entityHydrator)
     {
-        $this->dbRunner = $dbRunner;
+        $this->dbalConnection = $dbalConnection;
 
-        $this->hydrator = $hydrator;
+        $this->entityHydrator = $entityHydrator;
     }
 
-    public function insert(Insert|string $insert, ?int &$generatedValue): int
+    public function extractEntity(EntityInterface $entity): array
     {
-        $result = $this->dbRunner->executeCommand($insert);
-
-        $generatedValue = (int) $result->getGeneratedValue();
-
-        return $result->getAffectedRows();
+        return $this->entityHydrator->extract($entity);
     }
 
-    public function update(Update|string $update): int
+    public function insert(string $table, EntityInterface $entity): int
     {
-        $result = $this->dbRunner->executeCommand($update);
+        $qb = $this->dbalConnection->createQueryBuilder();
+        $qb->insert($table);
 
-        return $result->getAffectedRows();
+        foreach ($this->extractEntity($entity) as $key => $value) {
+            $qb->setValue($key, ':' . $key);
+            $qb->setParameter($key, $value);
+        }
+
+        $entity->setLastEntityAction('insert');
+
+        $affectedRows = $qb->executeStatement();
+
+        $generatedValue = (int) $this->dbalConnection->lastInsertId();
+
+        $entity->setEntityId($generatedValue);
+
+        return $affectedRows;
     }
 
-    public function delete(Delete|string $delete): int
+    public function update(string $table, EntityInterface $entity, string $entityKey): int
     {
-        $result = $this->dbRunner->executeCommand($delete);
+        if (!$entity->getEntityId()) {
+            throw new RuntimeException('Cannot update entity; missing identifier');
+        }
 
-        return $result->getAffectedRows();
+        $qb = $this->dbalConnection->createQueryBuilder();
+        $qb->update($table);
+
+        foreach ($this->extractEntity($entity) as $key => $value) {
+            $qb->set($key, ':' . $key);
+            $qb->setParameter($key, $value);
+        }
+
+        $qb->where("$entityKey = :entity_id")
+            ->setParameter('entity_id', $entity->getEntityId());
+
+        $affectedRows = $qb->executeStatement();
+
+        $entity->setLastEntityAction('update');
+
+        return $affectedRows;
+    }
+
+    public function delete(string $table, EntityInterface $entity, string $entityKey): int
+    {
+        if (!$entity->getEntityId()) {
+            throw new RuntimeException('Cannot delete entity; missing identifier');
+        }
+
+        $qb = $this->dbalConnection->createQueryBuilder();
+        $qb->update($table);
+
+        $qb->where("$entityKey = :entity_id")
+            ->setParameter('entity_id', $entity->getEntityId());
+
+        $affectedRows = $qb->executeStatement();
+
+        $entity->setLastEntityAction('delete');
+
+        return $affectedRows;
     }
 }

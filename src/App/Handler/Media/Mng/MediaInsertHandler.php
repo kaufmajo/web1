@@ -35,17 +35,14 @@ class MediaInsertHandler extends AbstractBaseHandler
         // script will stop when ...
         HelperService::isPostMaxSizeReached();
 
-        // param
-        $mediaIdParam = (int) $request->getAttribute('p1');
-
         // init
         $myInitConfig    = $this->getMyInitConfig();
         $mediaCommand    = $this->getMediaCommand();
         $mediaRepository = $this->getMediaRepository();
-        $mediaEntity     = $this->getMediaEntityById($mediaIdParam, Enum\ReturnEnum::NEW_ENTITY, new MediaEntity());
+        $mediaEntity = new MediaEntity();
 
         // datalist data
-        $tagData = $mediaRepository->fetchTag()->toArray();
+        $tagData = $mediaRepository->fetchTag();
 
         //form
         $mediaForm = $this->getMediaForm();

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Delegator\DbRunnerLoggerDelegatorFactory;
 use App\Listener\LoggingErrorListenerDelegatorFactory;
+use Doctrine\DBAL\Query\QueryBuilder;
 use Laminas\Stratigility\Middleware\ErrorHandler;
 use Mezzio\Authentication\AuthenticationInterface;
 use Mezzio\Authentication\Session\PhpSession;
@@ -42,7 +42,6 @@ class ConfigProvider
     {
         return [
             'aliases'    => [
-                Model\DbRunnerInterface::class                => Model\DbRunner::class,
                 Model\Media\MediaCommandInterface::class      => Model\Media\MediaCommand::class,
                 Model\Media\MediaRepositoryInterface::class   => Model\Media\MediaRepository::class,
                 Model\Termin\TerminCommandInterface::class    => Model\Termin\TerminCommand::class,
@@ -57,8 +56,6 @@ class ConfigProvider
             'factories'  => [
                 // Auth
                 AuthorizationInterface::class => LaminasRbacFactory::class,
-                // DB
-                Model\DbRunner::class => Model\DbRunnerFactory::class,
                 // Model
                 Model\Media\MediaCommand::class      => Model\Media\MediaCommandFactory::class,
                 Model\Media\MediaRepository::class   => Model\Media\MediaRepositoryFactory::class,
@@ -77,7 +74,6 @@ class ConfigProvider
             ],
             'delegators' => [
                 ErrorHandler::class => [LoggingErrorListenerDelegatorFactory::class],
-                Model\DbRunner::class => [DbRunnerLoggerDelegatorFactory::class],
             ],
         ];
     }

@@ -45,7 +45,7 @@ class TerminCalendarHandler extends AbstractTerminHandler
         $terminResultSet = $terminRepository->fetchTermin($this->getMappedTerminSearchValues($dateParam));
 
         // init collection
-        $terminCollection->init($terminResultSet->toArray());
+        $terminCollection->init($terminResultSet);
 
         // send response to client
         return new HtmlResponse($this->templateRenderer->render('app::termin/mng/calendar', $viewData));

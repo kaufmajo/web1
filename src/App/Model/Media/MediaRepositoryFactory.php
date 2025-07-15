@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Model\Media;
 
-use App\Model\DbRunnerInterface;
 use Doctrine\DBAL\Connection;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
@@ -23,14 +22,9 @@ class MediaRepositoryFactory implements FactoryInterface
         // dbalConnection
         $dbalConnection = $container->get(Connection::class);
 
-        // dbRunner
-        $dbRunner = $container->get(DbRunnerInterface::class);
-
         return new MediaRepository(
             $dbalConnection,
-            $dbRunner,
             new MediaEntityHydrator(),
-            new MediaReflectionHydrator(),
             new MediaEntity()
         );
     }

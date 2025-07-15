@@ -1,5 +1,7 @@
 <?php
 
+use App\Middleware\DbalLoggingMiddleware;
+use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
 use Psr\Container\ContainerInterface;
 
@@ -15,8 +17,12 @@ return [
     'dependencies' => [
         'factories' => [
             \Doctrine\DBAL\Connection::class => function (ContainerInterface $container) {
-                $config = $container->get('config')['doctrine']['connection'];
-                return DriverManager::getConnection($config);
+                $connectionParams = $container->get('config')['doctrine']['connection'];
+                $config = new Configuration();
+                $config->setMiddlewares([
+                    new DbalLoggingMiddleware($container->get(Psr\Log\LoggerInterface::class))
+                ]);
+                return DriverManager::getConnection($connectionParams, $config);
             },
         ],
     ],

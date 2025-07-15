@@ -137,12 +137,12 @@ abstract class AbstractTerminWriteHandler extends AbstractTerminHandler
         // init
         $terminRepository = $this->getTerminRepository();
 
-        $mitvonData    = $terminRepository->fetchMitvon()->toArray();
-        $kategorieData = $terminRepository->fetchKategorie()->toArray();
-        $betreffData   = $terminRepository->fetchBetreff()->toArray();
-        $linkData      = $terminRepository->fetchLink()->toArray();
-        $linkTitelData = $terminRepository->fetchLinkTitel()->toArray();
-        $imageData     = $terminRepository->fetchImage()->toArray();
+        $mitvonData    = $terminRepository->fetchMitvon();
+        $kategorieData = $terminRepository->fetchKategorie();
+        $betreffData   = $terminRepository->fetchBetreff();
+        $linkData      = $terminRepository->fetchLink();
+        $linkTitelData = $terminRepository->fetchLinkTitel();
+        $imageData     = $terminRepository->fetchImage();
 
         return [$mitvonData, $kategorieData, $betreffData, $linkData, $linkTitelData, $imageData];
     }

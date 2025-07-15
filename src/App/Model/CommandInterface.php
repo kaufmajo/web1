@@ -5,17 +5,12 @@ declare(strict_types=1);
 namespace App\Model;
 
 use App\Model\Entity\EntityInterface;
-use Laminas\Db\Sql\Delete;
-use Laminas\Db\Sql\Insert;
-use Laminas\Db\Sql\Update;
 
 interface CommandInterface
 {
-    public function getEntityData(EntityInterface $entity);
+    public function insert(string $table, EntityInterface $entity): int;
 
-    public function insert(Insert|string $insert, int &$generatedValue): int;
+    public function update(string $table, EntityInterface $entity, string $entityKey): int;
 
-    public function update(Update|string $update): int;
-
-    public function delete(Delete|string $delete): int;
+    public function delete(string $table, EntityInterface $entity, string $entityKey): int;
 }

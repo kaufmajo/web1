@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Handler\Home\Mng;
 
-use App\Model\DbRunnerInterface;
 use App\Handler\AbstractBaseHandlerFactory;
+use Doctrine\DBAL\Connection;
 use Psr\Container\ContainerInterface;
 
 class HomeTabellenHandlerFactory extends AbstractBaseHandlerFactory
@@ -16,10 +16,9 @@ class HomeTabellenHandlerFactory extends AbstractBaseHandlerFactory
 
         parent::init($page, $container);
 
-        // dbRunner
-        $dbRunner = $container->get(DbRunnerInterface::class);
+        $dbalConnection = $container->get(Connection::class);
 
-        $page->setDbRunner($dbRunner);
+        $page->setDbalConnection($dbalConnection);
 
         return $page;
     }

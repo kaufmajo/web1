@@ -5,19 +5,18 @@ declare(strict_types=1);
 namespace App\Model\Media;
 
 use App\Model\AbstractRepository;
-use App\Model\DbRunnerInterface;
 use App\Model\Entity\EntityHydratorInterface;
 use App\Model\Entity\EntityInterface;
+use App\Traits\Aware\DbalAwareTrait;
 use Doctrine\DBAL\Connection;
-use Laminas\Db\ResultSet\ResultSet;
-use Laminas\Db\Sql;
-use Laminas\Hydrator\HydratorInterface;
 
 class MediaRepository extends AbstractRepository implements MediaRepositoryInterface
 {
-    public function __construct(Connection $dbalConnection, DbRunnerInterface $dbRunner, EntityHydratorInterface $entityHydrator, HydratorInterface $hydrator, MediaEntity $prototype)
+    use DbalAwareTrait;
+
+    public function __construct(Connection $dbalConnection, EntityHydratorInterface $entityHydrator, MediaEntity $prototype)
     {
-        parent::__construct($dbalConnection, $dbRunner, $entityHydrator, $hydrator, $prototype);
+        parent::__construct($dbalConnection, $entityHydrator, $prototype);
     }
 
     public function refreshEntity(MediaEntityInterface &$mediaEntity)
@@ -32,15 +31,18 @@ class MediaRepository extends AbstractRepository implements MediaRepositoryInter
 
     public function findMediaById(int $id): null|MediaEntityInterface|EntityInterface
     {
-        $sql    = new Sql\Sql($this->dbRunner->getDb());
-        $select = $sql->select(['t1' => 'tajo1_media']);
+        $qb = $this->dbalConnection->createQueryBuilder();
 
-        // where
-        $select->where
-            ->equalTo('t1.media_id', $id);
+        $qb->select('*')
+            ->from('tajo1_media', 't1')
+            ->where('t1.media_id = ?')
+            ->setParameter(0, $id);
 
-        // execute
-        $entity = $this->findFirst($select);
+        $result = $qb->fetchAssociative();
+
+        if (!$result) return null;
+
+        $entity = $this->hydrateEntity($result);
 
         return $this->mapReferences($entity);
     }
@@ -50,126 +52,158 @@ class MediaRepository extends AbstractRepository implements MediaRepositoryInter
         return $entity;
     }
 
-    public function fetchMedia(array $params = [], string $order = 'media_aktualisiert_am DESC, media_id DESC'): ResultSet
+    public function fetchMedia(array $params = [], string $order = 'media_aktualisiert_am DESC, media_id DESC'): array
     {
-        $sql    = new Sql\Sql($this->dbRunner->getDb());
-        $select = $sql->select(['t1' => 'tajo1_media']);
-        $select->columns([
-            'media_id'              => 'media_id',
-            'media_parent_id'       => 'media_parent_id',
-            'media_name'            => 'media_name',
-            'media_groesse'         => 'media_groesse',
-            'media_mimetype'        => 'media_mimetype',
-            'media_von'             => 'media_von',
-            'media_bis'             => 'media_bis',
-            'media_anzeige'         => 'media_anzeige',
-            'media_hash'            => 'media_hash',
-            'media_tag'             => 'media_tag',
-            'media_privat'          => 'media_privat',
-            'media_erstellt_am'     => 'media_erstellt_am',
-            'media_aktualisiert_am' => 'media_aktualisiert_am',
-            '_gueltig'              => new Sql\Expression('IF(CURDATE() BETWEEN `t1`.`media_von` AND `t1`.`media_bis`, 1, 0)'),
-            '_hatVersion'           => new Sql\Expression('(SELECT COUNT(`c1`.`media_id`) FROM `tajo1_media` AS `c1` WHERE `c1`.`media_parent_id` = `t1`.`media_id`)'),
-        ]);
-        $select->join(
-            ['t2' => 'tajo1_termin'],
-            new Sql\Predicate\Expression('REGEXP_REPLACE(t2.termin_link,"/media/([0-9]+)","\\\\1") = t1.media_id OR REGEXP_REPLACE(t2.termin_image,"/media/([0-9]+)","\\\\1") = t1.media_id'),
-            [
-                'termin_id',
-            ],
-            Sql\Join::JOIN_LEFT
-        );
-        $select->group('t1.media_id');
-        $select->order($order);
+        $qb = $this->dbalConnection->createQueryBuilder();
+        $qb->select(
+            't1.media_id',
+            't1.media_parent_id',
+            't1.media_name',
+            't1.media_groesse',
+            't1.media_mimetype',
+            't1.media_von',
+            't1.media_bis',
+            't1.media_anzeige',
+            't1.media_hash',
+            't1.media_tag',
+            't1.media_privat',
+            't1.media_erstellt_am',
+            't1.media_aktualisiert_am',
+            't2.termin_id',
+        )
+            ->addSelect('IF(CURDATE() BETWEEN `t1`.`media_von` AND `t1`.`media_bis`, 1, 0) AS _gueltig')
+            ->addSelect('(SELECT COUNT(`c1`.`media_id`) FROM `tajo1_media` AS `c1` WHERE `c1`.`media_parent_id` = `t1`.`media_id`) AS _hatVersion')
+            ->from('tajo1_media', 't1')
+            ->leftJoin(
+                't1',
+                'tajo1_termin',
+                't2',
+                'REGEXP_REPLACE(t2.termin_link,"/media/([0-9]+)","\\\\1") = t1.media_id OR REGEXP_REPLACE(t2.termin_image,"/media/([0-9]+)","\\\\1") = t1.media_id'
+            )
+            ->groupBy('t1.media_id')
+            ->orderBy($order);
 
         // params
         if (isset($params['id']) && ! empty($params['id'])) {
-            $select->where
-                ->equalTo('t1.media_id', $params['id']);
+            $qb->andWhere($qb->expr()->eq('t1.media_id', ':where_id'));
+            $qb->setParameter('where_id', $params['id']);
         }
 
         // parent
         if (isset($params['parent']) && ! empty($params['parent'])) {
-            $select->where
-                ->equalTo('t1.media_parent_id', $params['parent']);
+            $qb->andWhere($qb->expr()->eq('t1.media_parent_id', ':where_parent'));
+            $qb->setParameter('where_parent', $params['parent']);
         } else {
-            $select->where
-                ->isNull('t1.media_parent_id');
+            $qb->andWhere($qb->expr()->isNull('t1.media_parent_id'));
         }
 
         // von
         if (isset($params['von']) && ! empty($params['von'])) {
-            $select->where
-                ->nest()
-                ->expression('`t1`.`media_bis` >= ?', $params['von'])
-                ->or
-                ->expression('`t1`.`media_von` >= ?', $params['von'])
-                ->unnest();
+            $qb->andWhere(
+                $qb->expr()->or(
+                    $qb->expr()->gte(`t1` . `media_bis`, ':where_von'),
+                    $qb->expr()->gte(`t1` . `media_von`, ':where_von'),
+                )
+            );
+            $qb->setParameter('where_von', $params['von']);
         }
 
         // bis
         if (isset($params['bis']) && ! empty($params['bis'])) {
-            $select->where
-                ->nest()
-                ->expression('`t1`.`media_bis` <= ?', $params['bis'])
-                ->or
-                ->expression('`t1`.`media_von` <= ?', $params['bis'])
-                ->unnest();
+            $qb->andWhere(
+                $qb->expr()->or(
+                    $qb->expr()->lte(`t1` . `media_bis`, ':where_bis'),
+                    $qb->expr()->lte(`t1` . `media_von`, ':where_bis'),
+                )
+            );
+            $qb->setParameter('where_bis', $params['bis']);
         }
 
         // suchtext
         if (isset($params['suchtext']) && ! empty($params['suchtext'])) {
-            $whereLikeSearch = $this->dbRunner->whereLikeSearchWithSqlObject($params['suchtext'], [
-                ['column' => 't1.media_id', 'search' => '%[value]%'],
-                ['column' => 't1.media_name', 'search' => '%[value]%'],
-                ['column' => 't1.media_anzeige', 'search' => '%[value]%'],
-                ['column' => 't1.media_tag', 'search' => '%[value]%'],
-            ]);
 
-            if ($whereLikeSearch) {
-                $select->where->addPredicates($whereLikeSearch);
+            $suchtext           = str_replace(['(', ')', '/', '\\'], ' ', $params['suchtext']);
+            $suchtextParts      = array_filter(explode(',', trim($suchtext)), 'strlen');
+
+            if (count($suchtextParts)) {
+
+                foreach ($suchtextParts as $value) {
+
+                    $whereLikeSearch = [];
+                    $suchtextSubparts = array_filter(explode(' ', trim($value)), 'strlen');
+
+                    foreach ($suchtextSubparts as $v) {
+
+                        $v = trim($v);
+
+                        if ('' !== $v) {
+
+                            $suchtextFields = [];
+
+                            foreach (
+                                [
+                                    ['column' => 't1.media_id', 'search' => '%[value]%'],
+                                    ['column' => 't1.media_name', 'search' => '%[value]%'],
+                                    ['column' => 't1.media_anzeige', 'search' => '%[value]%'],
+                                    ['column' => 't1.media_tag', 'search' => '%[value]%'],
+                                ] as $column
+                            ) {
+                                $quoteValue = $this->getDbalConnection()->quote(str_replace('[value]', $v, $column['search']), \Doctrine\DBAL\ParameterType::STRING);
+                                $suchtextFields[] = $qb->expr()->like($column['column'], $quoteValue);
+                            }
+                        }
+
+                        $whereLikeSearch[] = $qb->expr()->or(...$suchtextFields);
+                    }
+
+                    $qb->andWhere(...$whereLikeSearch);
+                }
             }
         }
 
         // tag
         if (isset($params['tag']) && ! empty($params['tag'])) {
-            $select->where
-                ->equalTo('t1.media_tag', $params['tag']);
+            $qb->andWhere($qb->expr()->eq('t1.media_tag', ':where_tag'));
+            $qb->setParameter('where_tag', $params['tag']);
         }
 
         // privat
         if (isset($params['privat'])) {
-            $select->where
-                ->equalTo('t1.media_privat', $params['privat']);
+            $qb->andWhere($qb->expr()->eq('t1.media_privat', ':where_privat'));
+            $qb->setParameter('where_privat', $params['privat']);
         }
 
         // limit
         if (isset($params['limit']) && ! empty($params['limit'])) {
-            $select->limit($params['limit']);
+            $qb->setFirstResult(0)
+                ->setMaxResults($params['limit']);
         }
 
-        return $this->fetch($select);
+        return $qb->fetchAllAssociative();
     }
 
-    public function fetchTag(array $params = [], string $order = 'media_tag ASC'): ResultSet
+    public function fetchTag(array $params = [], string $order = 'media_tag ASC'): array
     {
-        $sql    = new Sql\Sql($this->dbRunner->getDb());
-        $select = $sql->select(['t1' => 'tajo1_media']);
-        $select->columns([
-            'media_tag' => 'media_tag',
-        ]);
-        $select->group('t1.media_tag');
-        $select->order($order);
-        $select->where
-            ->isNull('t1.media_parent_id');
+        $qb = $this->dbalConnection->createQueryBuilder();
+        $qb->select('t1.media_tag')
+            ->from('tajo1_media', 't1')
+            ->andWhere(
+                $qb->expr()->isNotNull('t4.termin_mitvon'),
+                $qb->expr()->neq('t4.termin_mitvon', "''")
+            )
+            ->where($qb->expr()->isNull('t1.media_parent_id'))
+            ->groupBy('t1.media_tag')
+            ->orderBy($order);
 
         // params
+
         // label
         if (isset($params['tag']) && ! empty($params['tag'])) {
-            $select->where
-                ->equalTo('t1.media_tag', $params['tag']);
+            $qb->andWhere($qb->expr()->eq('t1.media_tag', $params[':where_tag']));
+            $qb->setParameter('where_tag', $params['tag']);
         }
 
-        return $this->fetch($select);
+        // return
+        return $qb->fetchAllAssociative();
     }
 }

@@ -42,7 +42,7 @@ class MediaUpdateHandler extends AbstractBaseHandler
         $mediaRepository = $this->getMediaRepository();
 
         // datalist data
-        $tagData = $mediaRepository->fetchTag()->toArray();
+        $tagData = $mediaRepository->fetchTag();
 
         // mediaEntity
         $mediaEntity = $this->getMediaEntityById($mediaIdParam);
