@@ -79,7 +79,7 @@ abstract class AbstractCommand implements CommandInterface
         }
 
         $qb = $this->dbalConnection->createQueryBuilder();
-        $qb->update($table);
+        $qb->delete($table);
 
         $qb->where("$entityKey = :entity_id")
             ->setParameter('entity_id', $entity->getEntityId());
