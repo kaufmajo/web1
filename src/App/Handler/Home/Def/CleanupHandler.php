@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Handler\Home\Def;
 
 use App\Handler\AbstractBaseHandler;
-use App\Traits\Aware\DatabaseAdapterAwareTrait;
+use App\Traits\Aware\DbalAwareTrait;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -22,12 +22,12 @@ use const DIRECTORY_SEPARATOR;
 
 class CleanupHandler extends AbstractBaseHandler
 {
-    use DatabaseAdapterAwareTrait;
+    use DbalAwareTrait;
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         // init
-        $databaseAdapter = $this->getDatabaseAdapter();
+        $dbal = $this->getDbalConnection();
         $myInitConfig = $this->getMyInitConfig();
 
         // view
@@ -45,19 +45,18 @@ class CleanupHandler extends AbstractBaseHandler
                 WHERE
                 (
                     termin_datum_ende IS NULL 
-                    AND termin_datum_start < DATE_SUB(CURDATE(), INTERVAL ' . $databaseAdapter->platform->quoteValue($myInitConfig['cleanup_tage_termine']) . ' DAY)
+                    AND termin_datum_start < DATE_SUB(CURDATE(), INTERVAL ' . $dbal->quote((string)$myInitConfig['cleanup_tage_termine']) . ' DAY)
                 )
                 OR
                 (
-                    termin_datum_start < DATE_SUB(CURDATE(), INTERVAL ' . $databaseAdapter->platform->quoteValue($myInitConfig['cleanup_tage_termine']) . ' DAY)
-                    AND termin_datum_ende < DATE_SUB(CURDATE(), INTERVAL ' . $databaseAdapter->platform->quoteValue($myInitConfig['cleanup_tage_termine']) . ' DAY)
+                    termin_datum_start < DATE_SUB(CURDATE(), INTERVAL ' . $dbal->quote((string)$myInitConfig['cleanup_tage_termine']) . ' DAY)
+                    AND termin_datum_ende < DATE_SUB(CURDATE(), INTERVAL ' . $dbal->quote((string)$myInitConfig['cleanup_tage_termine']) . ' DAY)
                 )';
 
-        $statement1 = $databaseAdapter->query($sql1);
-        $result1 = $statement1->execute();
+        $result1 = $dbal->executeStatement($sql1);
 
         // view
-        $viewData['cleanup_anzahl_termin'] = $result1->getAffectedRows();
+        $viewData['cleanup_anzahl_termin'] = $result1;
 
         // -------------------------------------------------------------------------------------------------------------
         // Cleanup History
@@ -67,13 +66,12 @@ class CleanupHandler extends AbstractBaseHandler
                     DELETE FROM 
                         tajo1_history 
                     WHERE 
-                        history_timestamp < DATE_SUB(NOW(), INTERVAL ' . $databaseAdapter->getPlatform()->quoteValue($myInitConfig['cleanup_tage_history']) . ' DAY)';
+                        history_timestamp < DATE_SUB(NOW(), INTERVAL ' . $dbal->quote((string)$myInitConfig['cleanup_tage_history']) . ' DAY)';
 
-        $statement5 = $databaseAdapter->query($sql5);
-        $result5 = $statement5->execute();
+        $result5 = $dbal->executeStatement($sql5);
 
         // view
-        $viewData['cleanup_anzahl_history'] = $result5->getAffectedRows();
+        $viewData['cleanup_anzahl_history'] = $result5;
 
         // -------------------------------------------------------------------------------------------------------------
         //  Cleanup Datum
@@ -87,14 +85,13 @@ class CleanupHandler extends AbstractBaseHandler
                     LEFT JOIN 
                         tajo1_lnk_datum_termin ON tajo1_lnk_datum_termin.datum_id = tajo1_datum.datum_id 
                     WHERE 
-                        tajo1_datum.datum_datum < DATE_SUB(NOW(), INTERVAL ' . $databaseAdapter->getPlatform()->quoteValue($myInitConfig['cleanup_tage_termine']) . ' DAY)
+                        tajo1_datum.datum_datum < DATE_SUB(NOW(), INTERVAL ' . $dbal->quote((string)$myInitConfig['cleanup_tage_termine']) . ' DAY)
                         AND tajo1_lnk_datum_termin.datum_id IS NULL';
 
-        $statement6 = $databaseAdapter->query($sql6);
-        $result6 = $statement6->execute();
+        $result6 = $dbal->executeStatement($sql6);
 
         // view
-        $viewData['cleanup_anzahl_datum'] = $result6->getAffectedRows();
+        $viewData['cleanup_anzahl_datum'] = $result6;
 
         // -------------------------------------------------------------------------------------------------------------
         //  Cleanup Termin-History
@@ -104,13 +101,12 @@ class CleanupHandler extends AbstractBaseHandler
                     DELETE FROM 
                         tajo1_terminHistory 
                     WHERE 
-                        terminHistory_timestamp < DATE_SUB(NOW(), INTERVAL ' . $databaseAdapter->getPlatform()->quoteValue($myInitConfig['cleanup_tage_termin_history']) . ' DAY)';
+                        terminHistory_timestamp < DATE_SUB(NOW(), INTERVAL ' . $dbal->quote((string)$myInitConfig['cleanup_tage_termin_history']) . ' DAY)';
 
-        $statement7 = $databaseAdapter->query($sql7);
-        $result7 = $statement7->execute();
+        $result7 = $dbal->executeStatement($sql7);
 
         // view
-        $viewData['cleanup_anzahl_termin_history'] = $result7->getAffectedRows();
+        $viewData['cleanup_anzahl_termin_history'] = $result7;
 
         // -------------------------------------------------------------------------------------------------------------
         //  Cleanup Media from Filesystem
@@ -168,7 +164,7 @@ class CleanupHandler extends AbstractBaseHandler
     {
         // init
         $isMediaInDatabase = false;
-        $databaseAdapter = $this->getDatabaseAdapter();
+        $dbal = $this->getDbalConnection();
 
         // process
         if (str_starts_with($filename, 'media_')) {
@@ -183,13 +179,11 @@ class CleanupHandler extends AbstractBaseHandler
                 FROM
                     `tajo1_media`
                 WHERE
-                    `media_id` = ' . $databaseAdapter->getPlatform()->quoteValue($matches[0]);
+                    `media_id` = ' . $dbal->quote((string)$matches[0]);
 
-            $statement6 = $databaseAdapter->query($sql6);
+            $result6 = $dbal->executeQuery($sql6);
 
-            $result6 = $statement6->execute();
-
-            $isMediaInDatabase = (bool) $result6->current()['anzahl'];
+            $isMediaInDatabase = (bool) $result6->fetchOne();
         }
 
         return $isMediaInDatabase;

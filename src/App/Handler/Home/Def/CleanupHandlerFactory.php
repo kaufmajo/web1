@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Handler\Home\Def;
 
 use App\Handler\AbstractBaseHandlerFactory;
-use Laminas\Db\Adapter\AdapterInterface;
+use Doctrine\DBAL\Connection;
 use Psr\Container\ContainerInterface;
 
 class CleanupHandlerFactory extends AbstractBaseHandlerFactory
@@ -15,7 +15,7 @@ class CleanupHandlerFactory extends AbstractBaseHandlerFactory
         $handler = new CleanupHandler();
 
         // db adapter
-        $handler->setDatabaseAdapter($container->get(AdapterInterface::class));
+        $handler->setDbalConnection($container->get(Connection::class));
 
         parent::init($handler, $container);
 
