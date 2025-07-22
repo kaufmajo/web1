@@ -90,7 +90,7 @@ $loggedIn = isset($this->data['security']) ? $this->data['security']->getIdentit
                                     <img class="d-block d-lg-none my-2 w-100" src="<?= $this->media($termin['termin_image']) ?>?w=1400" alt="Thumbnail">
                                 </a>
                             <?php endif ?>
-                            <div class="body-text fs-5 fw-light pb-2 <?php if (!$termin['termin_zeit_ganztags']) : ?>d-flex<?php endif ?>">
+                            <div class="body-text fs-5 fw-light pb-2 <?php if (!$termin['termin_zeit_ganztags']) : ?>d-flex flex-wrap<?php endif ?>">
                                 <div class="me-2 text-secondary">
                                     <?php if (!$termin['termin_zeit_ganztags']) : ?>
                                         <?= $this->escape(substr($termin['termin_zeit_start'], 0, 5)) ?>
