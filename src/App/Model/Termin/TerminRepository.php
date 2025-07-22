@@ -184,7 +184,7 @@ class TerminRepository extends AbstractRepository implements TerminRepositoryInt
 
         // anzeige
         if (isset($params['anzeige']) && $params['anzeige']) {
-            $conditions[] = $expr->isNotNull('t4.termin_id IS NOT NULL');
+            $conditions[] = $expr->isNotNull('t4.termin_id');
         }
 
         // tage

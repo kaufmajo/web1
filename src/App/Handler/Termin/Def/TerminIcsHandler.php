@@ -56,7 +56,7 @@ class TerminIcsHandler extends AbstractTerminHandler
         $terminResultSet = $terminRepository->fetchTermin($searchValues, ['t4.termin_id']);
 
         // init collection
-        $terminCollection->init($terminResultSet->toArray());
+        $terminCollection->init($terminResultSet);
 
         // Set HTTP headers
         $headers['Content-Type']        = 'text/calendar; charset=utf-8';

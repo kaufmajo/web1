@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Form\Element\Select;
 
-use Laminas\Db\Adapter\Adapter as DbAdapter;
+use Doctrine\DBAL\Connection;
 use Laminas\Form\Element;
 
 class TerminKategorieElementSelect extends Element\Select
 {
-    protected DbAdapter $db;
+    protected Connection $dbal;
 
-    public function setDb(DbAdapter $db)
+    public function setDb(Connection $dbal)
     {
-        $this->db = $db;
+        $this->dbal = $dbal;
     }
 
     public function init()
@@ -33,14 +33,13 @@ class TerminKategorieElementSelect extends Element\Select
                 ORDER BY
                     termin_kategorie';
 
-        $statement = $this->db->query($sql);
-        $result    = $statement->execute();
+        $stmt = $this->dbal->executeQuery($sql);
         $return    = [];
 
-        foreach ($result as $r) {
-            $return[$r['termin_kategorie']] = [
-                'label' => $r['termin_kategorie'],
-                'value' => $r['termin_kategorie'],
+        while (($row = $stmt->fetchAssociative()) !== false) {
+            $return[$row['termin_kategorie']] = [
+                'label' => $row['termin_kategorie'],
+                'value' => $row['termin_kategorie'],
                 //'attributes' => ['data-kalender' => 'calendar-1'],
             ];
         }

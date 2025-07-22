@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use Laminas\Db\Adapter\Adapter;
+use Doctrine\DBAL\Connection;
 
 class HistoryService
 {
     protected const CONST_THROTTLE       = 'Throttle';
     protected const CONST_THROTTLE_COUNT = 7;
 
-    protected Adapter $dbAdapter;
+    protected Connection $dbal;
 
-    public function __construct(Adapter $dbAdapter)
+    public function __construct(Connection $dbal)
     {
-        $this->dbAdapter = $dbAdapter;
+        $this->dbal = $dbal;
     }
 
     public function getUrlString(): string
@@ -34,7 +34,7 @@ class HistoryService
 
         $sql = "INSERT INTO `tajo1_history` (`history_url`, `history_ip`) VALUES (?, ?)";
 
-        $this->dbAdapter->query($sql, [$url, $_SERVER["REMOTE_ADDR"]]);
+        $this->dbal->executeStatement($sql, [$url, $_SERVER["REMOTE_ADDR"]]);
 
         return $this;
     }
@@ -47,7 +47,7 @@ class HistoryService
 
         $sql = "INSERT INTO `tajo1_history` (`history_url`, `history_ip`) VALUES (?, ?)";
 
-        $this->dbAdapter->query($sql, [$url, $_SERVER["REMOTE_ADDR"] . $identifier]);
+        $this->dbal->executeStatement($sql, [$url, $_SERVER["REMOTE_ADDR"] . $identifier]);
 
         return $this;
     }
@@ -71,9 +71,9 @@ class HistoryService
 
         $url = self::CONST_THROTTLE;
 
-        $resultSet = $this->dbAdapter->query($sql, [$_SERVER["REMOTE_ADDR"] . $identifier, $url]);
+        $resultSet = $this->dbal->executeQuery($sql, [$_SERVER["REMOTE_ADDR"] . $identifier, $url]);
 
-        $count = $resultSet->current() ? $resultSet->current()['Anzahl'] : 0;
+        $count = $resultSet->fetchOne();
 
         if ((self::CONST_THROTTLE_COUNT + 1) < $count) {
             exit;

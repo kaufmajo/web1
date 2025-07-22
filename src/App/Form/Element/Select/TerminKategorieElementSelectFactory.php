@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Form\Element\Select;
 
 use App\Form;
-use Laminas\Db\Adapter\AdapterInterface;
+use Doctrine\DBAL\Connection;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -20,11 +20,11 @@ class TerminKategorieElementSelectFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): TerminKategorieElementSelect
     {
-        $db = $container->get(AdapterInterface::class);
+        $dbal = $container->get(Connection::class);
 
         $element = new Form\Element\Select\TerminKategorieElementSelect();
 
-        $element->setDb($db);
+        $element->setDb($dbal);
 
         return $element;
     }

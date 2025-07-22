@@ -33,7 +33,7 @@ class MediaVersionHandler extends AbstractBaseHandler
         $mediaResultSet = $mediaRepository->fetchMedia(['parent' => $mediaIdParam]);
 
         // set view data
-        $viewData['mediaArray'] = $mediaResultSet->toArray();
+        $viewData['mediaArray'] = $mediaResultSet;
 
         return new HtmlResponse(
             $this->templateRenderer->render('app::media/mng/version', $viewData)

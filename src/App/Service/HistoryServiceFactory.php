@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use Laminas\Db\Adapter\AdapterInterface;
+use Doctrine\DBAL\Connection;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -20,8 +20,8 @@ class HistoryServiceFactory implements FactoryInterface
     public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): HistoryService
     {
         // db
-        $db = $container->get(AdapterInterface::class);
+        $dbal = $container->get(Connection::class);
 
-        return new HistoryService($db);
+        return new HistoryService($dbal);
     }
 }

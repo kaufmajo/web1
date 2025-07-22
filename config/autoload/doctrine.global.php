@@ -19,9 +19,9 @@ return [
             \Doctrine\DBAL\Connection::class => function (ContainerInterface $container) {
                 $connectionParams = $container->get('config')['doctrine']['connection'];
                 $config = new Configuration();
-                $config->setMiddlewares([
-                    new DbalLoggingMiddleware($container->get(Psr\Log\LoggerInterface::class))
-                ]);
+                // $config->setMiddlewares([
+                //     new DbalLoggingMiddleware($container->get(Psr\Log\LoggerInterface::class))
+                // ]);
                 return DriverManager::getConnection($connectionParams, $config);
             },
         ],
